@@ -2,7 +2,7 @@ import { Response } from "express";
 import { ZodError } from "zod";
 
 
-// AppError
+// AppError (Xử lí lỗi ứng dụng)
 export class AppError extends Error {
   private statusCode: number = 500;
   private rootCause?: Error;
@@ -14,7 +14,7 @@ export class AppError extends Error {
     super(err.message);
   }
 
-  // Factory method (Design Pattern)
+  // Phương thức xây dựng (Mẫu thiết kế)
   static from(err: Error, statusCode: number = 500) {
     const appError = new AppError(err);
     appError.statusCode = statusCode;
@@ -29,14 +29,14 @@ export class AppError extends Error {
     return null;
   }
 
-  // Wrapper (Design Pattern)
+  // Trình bao bọc (Mẫu thiết kế)
   wrap(rootCause: Error): AppError {
     const appError = AppError.from(this, this.statusCode);
     appError.rootCause = rootCause;
     return appError;
   }
 
-  // setter chain
+  // chuỗi log
   withDetail(key: string, value: any): AppError {
     this.details[key] = value;
     return this;
@@ -73,7 +73,7 @@ export class AppError extends Error {
   }
 }
 
-// Util error function
+// Hàm chức năng báo lỗi
 export const responseErr = (err: Error, res: Response) => {
   const isProduction = process.env.NODE_ENV === 'production';
   !isProduction && console.error(err.stack);
