@@ -11,7 +11,7 @@ export interface ReqWithRequester { requester: Requester; }
 export interface ReqWithRequesterOpt { requester?: Requester; }
 
 export interface ITokenProvider {
-  // Tạo mã truy cập
+  // Tạo mã truy cập token
   generateToken(payload: TokenPayload): Promise<string>;
   verifyToken(token: string): Promise<TokenPayload | null>;
 }

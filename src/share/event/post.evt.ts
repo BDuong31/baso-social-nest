@@ -10,7 +10,7 @@ export const EvtPostDeleted = 'PostDeleted';
 export type PostEventPayload = {
   postId: string;
   topicId?: string;
-  authorIdOfParentComment?: string | null; // sự kiện trả lời bình luật
+  authorIdOfParentComment?: string | null; // Sự kiện đã trả lời bình luận
 };
 
 export class PostEvent<T extends PostEventPayload> extends AppEvent<T> {

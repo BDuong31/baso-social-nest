@@ -1,6 +1,7 @@
 import { v7 } from "uuid";
 import z from "zod";
 
+// Các trạng thái cơ bản
 export enum BaseStatus {
   ACTIVE = 'active',
   INACTIVE = 'inactive',
@@ -11,11 +12,13 @@ export enum BaseStatus {
   DELETED = 'deleted',
 }
 
+// Các kiểu tải bài lên
 export enum PostType {
   TEXT = 'text',
   MEDIA = 'media',
 }
 
+// Schema của người dùng
 export const publicUserSchema = z.object({
   id: z.string().uuid(),
   username: z.string(),
@@ -25,6 +28,7 @@ export const publicUserSchema = z.object({
 });
 
 export interface PublicUser extends z.infer<typeof publicUserSchema> {}
+
 
 export const pagingDTOSchema = z.object({
   page: z.coerce.number().min(1, { message: 'Page number must be at least 1' }).default(1),
@@ -41,6 +45,7 @@ export type Paginated<E> = {
   total: number;
 };
 
+// lời nhắn PubSub
 export class PubSubMessage {
   public readonly ID: string;
   public readonly SenderID?: string;

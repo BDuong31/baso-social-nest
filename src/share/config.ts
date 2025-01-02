@@ -9,9 +9,9 @@ const port = process.env.PORT || '3000';
 export const config = {
   envName: process.env.NODE_ENV,
   port,
-  jwtSecret: process.env.JWT_SECRET_KEY || 'Baso',
+  jwtSecret: process.env.JWT_SECRET_KEY || '200L@b.io',
   rpc: {
-    jwtSecret: process.env.JWT_SECRET_KEY || 'Baso',
+    jwtSecret: process.env.JWT_SECRET_KEY || '200L@b.io',
     introspectUrl: process.env.VERIFY_TOKEN_URL || `http://localhost:${port}/v1/rpc/introspect`,
     postServiceURL: process.env.POST_SERVICE_URL || `http://localhost:${port}/v1`,
     userServiceURL: process.env.USER_SERVICE_URL || `http://localhost:${port}/v1`,
@@ -24,7 +24,7 @@ export const config = {
   redis: {
     host: process.env.REDIS_HOST || 'localhost',
     port: parseInt(process.env.REDIS_PORT || '6379'),
-    url: process.env.REDIS_URL || 'redis://:200lab_redis@localhost:6379/0'
+    url: process.env.REDIS_URL || 'redis://:baso_redis@localhost:6379/0'
   },
   db: {
     name: process.env.DB_NAME,
@@ -38,5 +38,5 @@ export const config = {
     path: 'uploads',
     cdn: process.env.CDN_URL || `http://localhost:${port}/uploads`
   },
-  dbURL: `postgresql://postpre:310725@localhost:5432/basosocial?connection_limit=50`
+  dbURL: `postgresql://baso:baso_secret@localhost:5432/baso-social?connection_limit=50`
 };
