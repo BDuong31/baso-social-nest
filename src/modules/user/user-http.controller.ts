@@ -7,27 +7,31 @@ import { UserLoginDTO, UserRegistrationDTO, UserUpdateDTO, UserUpdateProfileDTO 
 import { ErrInvalidToken, User } from "./user.model";
 import { IUserRepository, IUserService } from "./user.port";
 
+// Lớp UserHttpController cung cấp các phương thức xử lý request HTTP
 @Controller()
 export class UserHttpController {
   constructor(
     @Inject(USER_SERVICE) private readonly userService: IUserService
   ) {}
 
-  @Post('register')
+  // Phương thức đăng ký người dùng mới
+  @Post('v1/register')
   @HttpCode(HttpStatus.OK)
   async register(@Body() dto: UserRegistrationDTO) {
     const data = await this.userService.register(dto);
     return { data };
   }
 
-  @Post('authenticate')
+  // Phương thức đăng nhập
+  @Post('v1/authenticate')
   @HttpCode(HttpStatus.OK)
   async authenticate(@Body() dto: UserLoginDTO) {
     const data = await this.userService.login(dto);
     return { data };
   }
 
-  @Get('profile')
+  // Phương thức lấy thông tin người dùng
+  @Get('v1/profile')
   @HttpCode(HttpStatus.OK)
   async profile(@Request() req: ExpressRequest) {
     const [type, token] = req.headers.authorization?.split(' ') ?? [];
@@ -40,7 +44,8 @@ export class UserHttpController {
     return { data };
   }
 
-  @Patch('profile')
+  // Phương thức cập nhật hồ sơ người dùng
+  @Patch('v1/profile')
   @UseGuards(RemoteAuthGuard)
   @HttpCode(HttpStatus.OK)
   async updateProfile(@Request() req: ReqWithRequester, @Body() dto: UserUpdateProfileDTO) {
@@ -49,36 +54,38 @@ export class UserHttpController {
     return { data: true };
   }
 
-  @Patch('users/:id')
+  // Phương thức cập nhật thông tin người dùng
+  @Patch('v1/users/:id')
   @UseGuards(RemoteAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
   async updateUser(@Request() req: ReqWithRequester, @Param('id') id: string, @Body() dto: UserUpdateDTO) {
-    // 200Lab TODO: can be omitted, because we already check in guards
     const requester = req.requester;
     await this.userService.update(requester, id, dto);
     return { data: true };
   }
 
-  @Delete('users/:id')
+  // Phương thức xóa người dùng
+  @Delete('v1/users/:id')
   @UseGuards(RemoteAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
   async deleteUser(@Request() req: ReqWithRequester, @Param('id') id: string) {
-    // 200Lab TODO: can be omitted, because we already check in guards
     const requester = req.requester;
     await this.userService.delete(requester, id);
     return { data: true };
   }
 }
 
-@Controller('rpc')
+// Lớp UserRpcHttpController cung cấp các phương thức xử lý request RPC
+@Controller('v1/rpc')
 export class UserRpcHttpController {
   constructor(
     @Inject(USER_SERVICE) private readonly userService: IUserService,
     @Inject(USER_REPOSITORY) private readonly userRepository: IUserRepository
   ) {}
 
+  // Phương thức kiểm tra mã token
   @Post('introspect')
   @HttpCode(HttpStatus.OK)
   async introspect(@Body() dto: { token: string }) {
@@ -86,6 +93,7 @@ export class UserRpcHttpController {
     return { data: result };
   }
 
+  // Phương thức lấy thông tin người dùng
   @Get('users/:id')
   @HttpCode(HttpStatus.OK)
   async getUser(@Param('id') id: string) {
@@ -98,6 +106,7 @@ export class UserRpcHttpController {
     return { data: this._toResponseModel(user) };
   }
 
+  // Phương thức lấy danh sách người dùng theo id
   @Post('users/list-by-ids')
   @HttpCode(HttpStatus.OK)
   async listUsersByIds(@Body('ids') ids: string[]) {
@@ -105,6 +114,7 @@ export class UserRpcHttpController {
     return { data: data.map(this._toResponseModel) };
   }
 
+  // Chuyển đổi dữ liệu từ User sang dạng trả về
   private _toResponseModel(data: User): Omit<User, 'password' | 'salt'> {
     const { password, salt, ...rest } = data;
     return rest;

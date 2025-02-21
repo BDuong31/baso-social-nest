@@ -7,13 +7,15 @@ import { UserLoginDTO, userLoginDTOSchema, UserRegistrationDTO, userRegistration
 import { ErrInvalidToken, ErrInvalidUsernameAndPassword, ErrUserInactivated, ErrUsernameExisted, Status, User } from "./user.model";
 import { IUserRepository, IUserService } from "./user.port";
 
+// Lớp UserService cung cấp các phương thức xử lý logic liên quan đến người dùng
 @Injectable()
 export class UserService implements IUserService {
   constructor(
-    @Inject(USER_REPOSITORY) private readonly userRepo: IUserRepository,
-    @Inject(TOKEN_PROVIDER) private readonly tokenProvider: ITokenProvider,
+    @Inject(USER_REPOSITORY) private readonly userRepo: IUserRepository, // Đối tượng thực thi các phương thức truy vấn dữ liệu
+    @Inject(TOKEN_PROVIDER) private readonly tokenProvider: ITokenProvider, // Đối tượng tạo và xác thực token
   ) { }
 
+  // Phương thức đăng ký người dùng mới
   async register(dto: UserRegistrationDTO): Promise<string> {
     const data = userRegistrationDTOSchema.parse(dto);
 
@@ -45,6 +47,7 @@ export class UserService implements IUserService {
     return newId;
   }
 
+  // Phương thức đăng nhập
   async login(dto: UserLoginDTO): Promise<string> {
     const data = userLoginDTOSchema.parse(dto);
 
@@ -60,6 +63,7 @@ export class UserService implements IUserService {
       throw AppError.from(ErrInvalidUsernameAndPassword, 400).withLog('Password is incorrect');
     }
 
+    // 3. Kiểm tra trạng thái người dùng
     if (user.status === Status.DELETED || user.status === Status.INACTIVE) {
       throw AppError.from(ErrUserInactivated, 400);
     }
@@ -70,18 +74,24 @@ export class UserService implements IUserService {
     return token;
   }
 
+  // Phương thức xác thực token
   async introspectToken(token: string): Promise<TokenPayload> {
+
+    // 1. Xác thực token
     const payload = await this.tokenProvider.verifyToken(token);
 
+    // 2. Kiểm tra token
     if (!payload) {
       throw AppError.from(ErrInvalidToken, 400);
     }
 
+    // 3. Lấy thông tin người dùng
     const user = await this.userRepo.get(payload.sub);
     if (!user) {
       throw AppError.from(ErrNotFound, 400);
     }
 
+    // 4. Kiểm tra trạng thái người dùng
     if (user.status === Status.DELETED || user.status === Status.INACTIVE || user.status === Status.BANNED) {
       throw AppError.from(ErrUserInactivated, 400);
     }
@@ -92,9 +102,13 @@ export class UserService implements IUserService {
     };
   }
 
+  // Phương thức lấy thông tin người dùng
   async profile(userId: string): Promise<Omit<User, 'password' | 'salt'>> {
+    
+    // 1. Lấy thông tin người dùng
     const user = await this.userRepo.get(userId);
     
+    // 2. Kiểm tra người dùng
     if (!user) {
       throw AppError.from(ErrNotFound, 400);
     }
@@ -103,27 +117,34 @@ export class UserService implements IUserService {
     return rest;
   }
 
+  // Phương thức cập nhật thông tin người dùng
   async update(requester: Requester, userId: string, dto: UserUpdateDTO): Promise<void> {
+    // 1. Kiểm tra quyền hạn
     if (requester.role !== UserRole.ADMIN && requester.sub !== userId) {
       throw AppError.from(ErrForbidden, 400);
     }
 
+    // 2. Kiểm tra dữ liệu đầu vào
     const data = userUpdateDTOSchema.parse(dto);
 
+    // 3. Kiểm tra người dùng
     const user = await this.userRepo.get(userId);
     if (!user) {
       throw AppError.from(ErrNotFound, 400);
     }
 
+    // 4. Cập nhật thông tin người dùng
     await this.userRepo.update(userId, data);
   }
 
+  // Phương thức xóa người dùng
   async delete(requester: Requester, userId: string): Promise<void> {
+    // 1. Kiểm tra quyền hạn
     if (requester.role !== UserRole.ADMIN && requester.sub !== userId) {
       throw AppError.from(ErrForbidden, 400);
     }
 
-    // soft delete
+    // 2. Xóa người dùng
     await this.userRepo.delete(userId, false);
   }
 }

@@ -2,14 +2,15 @@ import { Injectable } from "@nestjs/common";
 import axios from "axios";
 import { ITokenIntrospect, TokenIntrospectResult } from "../interface";
 
-// 200Lab Note: we might use HTTP Module of NestJS instead of axios directly
-// but for now, we use axios to make it simple
+// Khởi tạo client cho việc giao tiếp với introspect service
 @Injectable()
 export class TokenIntrospectRPCClient implements ITokenIntrospect {
   constructor(private readonly url: string) { }
 
+  // Hàm kiểm tra token
   async introspect(token: string): Promise<TokenIntrospectResult> {
     try {
+      // Gửi request lên introspect service
       const { data } = await axios.post(`${this.url}`, { token });
       const { sub, role } = data.data;
       return {

@@ -5,11 +5,13 @@ import { NotificationController, NotificationMessageController } from './notific
 import { NOTI_REPOSITORY, NOTI_SERVICE } from './notification.di-token';
 import { NotificationService } from './notification.service';
 
+// Khai báo các dependencies
 const dependencies = [
   { provide: NOTI_SERVICE, useClass: NotificationService },
   { provide: NOTI_REPOSITORY, useClass: NotificationRepository},
 ];
 
+// Khai báo Module Notification
 @Module({
   imports: [ShareModule],
   controllers: [NotificationController, NotificationMessageController],

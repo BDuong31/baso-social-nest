@@ -1,11 +1,14 @@
-/*
-  Warnings:
-
-  - You are about to drop the `User` table. If the table is not empty, all the data it contains will be lost.
-
-*/
 -- CreateEnum
 CREATE TYPE "NotificationAction" AS ENUM ('liked', 'followed', 'replied');
+
+-- CreateEnum
+CREATE TYPE "chatRoomType" AS ENUM ('direct', 'group');
+
+-- CreateEnum
+CREATE TYPE "chatRoomStatus" AS ENUM ('pending', 'active', 'deleted');
+
+-- CreateEnum
+CREATE TYPE "stories_status" AS ENUM ('active', 'inactive');
 
 -- CreateEnum
 CREATE TYPE "CommentStatus" AS ENUM ('pending', 'approved', 'rejected', 'deleted', 'spam');
@@ -19,8 +22,31 @@ CREATE TYPE "UserRole" AS ENUM ('user', 'admin');
 -- CreateEnum
 CREATE TYPE "UserStatus" AS ENUM ('active', 'pending', 'inactive', 'banned', 'deleted');
 
--- DropTable
-DROP TABLE "User";
+-- CreateTable
+CREATE TABLE "chat_messages" (
+    "id" VARCHAR(36) NOT NULL,
+    "room_id" VARCHAR(36) NOT NULL,
+    "sender_id" VARCHAR(36) NOT NULL,
+    "content" TEXT,
+    "created_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "chat_messages_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "chat_rooms" (
+    "id" VARCHAR(36) NOT NULL,
+    "creator_id" VARCHAR(36) NOT NULL,
+    "receiver_id" VARCHAR(36) NOT NULL,
+    "type" "chatRoomType" DEFAULT 'direct',
+    "status" "chatRoomStatus" DEFAULT 'pending',
+    "created_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "deleted_at" TIMESTAMP(0),
+
+    CONSTRAINT "chat_rooms_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "comment_likes" (
@@ -90,6 +116,15 @@ CREATE TABLE "post_saves" (
 );
 
 -- CreateTable
+CREATE TABLE "post_tags" (
+    "post_id" VARCHAR(36) NOT NULL,
+    "tag_id" VARCHAR(36) NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "post_tags_pkey" PRIMARY KEY ("post_id","tag_id")
+);
+
+-- CreateTable
 CREATE TABLE "posts" (
     "id" VARCHAR(36) NOT NULL,
     "content" TEXT NOT NULL,
@@ -104,6 +139,51 @@ CREATE TABLE "posts" (
     "updated_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "posts_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "stories" (
+    "id" VARCHAR(36) NOT NULL,
+    "user_id" VARCHAR(36) NOT NULL,
+    "content" TEXT,
+    "like_count" INTEGER NOT NULL DEFAULT 0,
+    "view_count" INTEGER NOT NULL DEFAULT 0,
+    "media" JSONB,
+    "expires_at" TIMESTAMP(6) NOT NULL,
+    "status" "stories_status" NOT NULL DEFAULT 'active',
+    "created_at" TIMESTAMP(6) NOT NULL,
+    "updated_at" TIMESTAMP(6) NOT NULL,
+
+    CONSTRAINT "stories_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "story_likes" (
+    "story_id" VARCHAR(36) NOT NULL,
+    "user_id" VARCHAR(36) NOT NULL,
+    "created_at" TIMESTAMP(6) NOT NULL,
+
+    CONSTRAINT "story_likes_pkey" PRIMARY KEY ("story_id","user_id")
+);
+
+-- CreateTable
+CREATE TABLE "story_views" (
+    "story_id" VARCHAR(36) NOT NULL,
+    "user_id" VARCHAR(36) NOT NULL,
+    "created_at" TIMESTAMP(6) NOT NULL,
+
+    CONSTRAINT "story_views_pkey" PRIMARY KEY ("story_id","user_id")
+);
+
+-- CreateTable
+CREATE TABLE "tags" (
+    "id" VARCHAR(36) NOT NULL,
+    "name" VARCHAR(50) NOT NULL,
+    "post_count" INTEGER DEFAULT 0,
+    "created_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "tags_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -141,6 +221,18 @@ CREATE TABLE "users" (
 );
 
 -- CreateIndex
+CREATE INDEX "room_id" ON "chat_messages"("room_id");
+
+-- CreateIndex
+CREATE INDEX "sender_id" ON "chat_messages"("sender_id");
+
+-- CreateIndex
+CREATE INDEX "creatorIdIdx" ON "chat_rooms"("creator_id");
+
+-- CreateIndex
+CREATE INDEX "receiverIdIdx" ON "chat_rooms"("receiver_id");
+
+-- CreateIndex
 CREATE INDEX "parentIdIdx" ON "comments"("parent_id");
 
 -- CreateIndex
@@ -165,10 +257,19 @@ CREATE INDEX "userId" ON "post_likes"("user_id");
 CREATE INDEX "postSaveUserIdIdx" ON "post_saves"("user_id");
 
 -- CreateIndex
+CREATE INDEX "tag_id" ON "post_tags"("tag_id");
+
+-- CreateIndex
 CREATE INDEX "authorIdIdx" ON "posts"("author_id");
 
 -- CreateIndex
 CREATE INDEX "isFeaturedIdx" ON "posts"("is_featured");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "stories_created_at_idx" ON "stories"("created_at");
+
+-- CreateIndex
+CREATE INDEX "user_id" ON "stories"("user_id");
 
 -- CreateIndex
 CREATE INDEX "role" ON "users"("role");

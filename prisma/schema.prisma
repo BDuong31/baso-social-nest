@@ -7,7 +7,35 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model CommentLike {
+model ChatMessages {
+  id        String   @id @map("id") @db.VarChar(36)
+  roomId    String   @map("room_id") @db.VarChar(36)
+  senderId  String   @map("sender_id") @db.VarChar(36)
+  content   String?  @map("content") @db.Text
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamp(0)
+
+  @@index([roomId], map: "room_id")
+  @@index([senderId], map: "sender_id")
+  @@map("chat_messages")
+}
+
+model ChatRoom {
+  id         String             @id @map("id") @db.VarChar(36)
+  creatorId  String             @map("creator_id") @db.VarChar(36)
+  receiverId String             @map("receiver_id") @db.VarChar(36)
+  type       chatRoomType?   @default(direct) @map("type")
+  status     chatRoomStatus? @default(pending) @map("status")
+  createdAt  DateTime           @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt  DateTime           @default(now()) @map("updated_at") @db.Timestamp(0)
+  deletedAt  DateTime?          @map("deleted_at") @db.Timestamp(0)
+
+  @@index([creatorId], map: "creatorIdIdx")
+  @@index([receiverId], map: "receiverIdIdx")
+  @@map("chat_rooms")
+}
+
+model CommentLikes {
   commentId String   @map("comment_id") @db.VarChar(36)
   userId    String   @map("user_id") @db.VarChar(36)
   createdAt DateTime @map("created_at") @db.Timestamp(3)
@@ -80,6 +108,16 @@ model PostSave {
   @@map("post_saves")
 }
 
+model PostTags {
+  postId    String   @map("post_id") @db.VarChar(36)
+  tagId     String   @map("tag_id") @db.VarChar(36)
+  createdAt DateTime @map("created_at") @db.Timestamp(3)
+
+  @@id([postId, tagId])
+  @@index([tagId], map: "tag_id")
+  @@map("post_tags")
+}
+
 model Post {
   id           String      @id @map("id") @db.VarChar(36)
   content      String      @map("content") @db.Text
@@ -96,6 +134,50 @@ model Post {
   @@index([authorId], map: "authorIdIdx")
   @@index([isFeatured], map: "isFeaturedIdx")
   @@map("posts")
+}
+
+model Stories {
+  id        String         @id @map("id") @db.VarChar(36)
+  userId    String         @map("user_id") @db.VarChar(36)
+  content   String?        @map("content") @db.Text
+  likeCount Int            @default(0) @map("like_count")  @db.Integer
+  viewCount Int            @default(0) @map("view_count")  @db.Integer
+  media     Json?
+  expiresAt DateTime       @map("expires_at") @db.Timestamp(6)
+  status    stories_status @default(active) @map("status")
+  createdAt DateTime       @unique(map: "stories_created_at_idx") @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime       @map("updated_at") @db.Timestamp(6)
+
+  @@index([userId], map: "user_id")
+  @@map("stories")
+}
+
+model StoryLikes {
+  storyId   String   @map("story_id") @db.VarChar(36)
+  userId    String   @map("user_id") @db.VarChar(36)
+  createdAt DateTime @map("created_at")  @db.Timestamp(6)
+
+  @@id([storyId, userId])
+  @@map("story_likes")
+}
+
+model StoryViews {
+  storyId   String   @map("story_id") @db.VarChar(36)
+  userId    String   @map("user_id") @db.VarChar(36)
+  createdAt DateTime @map("created_at")  @db.Timestamp(6)
+
+  @@id([storyId, userId])
+  @@map("story_views")
+}
+
+model Tags {
+  id        String   @id @map("id") @db.VarChar(36)
+  name      String   @map("name") @db.VarChar(50)
+  postCount Int?     @default(0) @map("post_count") @db.Integer
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamp(0)
+
+  @@map("tags")
 }
 
 model Topic {
@@ -116,6 +198,8 @@ model User {
   username      String        @map("username") @db.VarChar(100)
   firstName     String        @map("first_name") @db.VarChar(100)
   lastName      String        @map("last_name") @db.VarChar(100)
+  email         String?        @unique @map("email") @db.VarChar(255)
+  phone         String?       @map("phone") @db.VarChar(20)
   password      String        @map("password") @db.VarChar(100)
   salt          String        @map("salt") @db.VarChar(50)
   role          UserRole      @default(user) @map("role")
@@ -127,6 +211,7 @@ model User {
   createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt     DateTime      @default(now()) @map("updated_at") @db.Timestamp(0)
 
+  @@unique([email], map: "email")
   @@index([role], map: "role")
   @@index([status], map: "status")
   @@map("users")
@@ -136,6 +221,22 @@ enum NotificationAction {
   liked
   followed
   replied
+}
+
+enum chatRoomType {
+  direct
+  group
+}
+
+enum chatRoomStatus {
+  pending
+  active
+  deleted
+}
+
+enum stories_status {
+  active
+  inactive
 }
 
 enum CommentStatus {

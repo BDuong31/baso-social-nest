@@ -7,14 +7,17 @@ import { RemoteAuthGuard } from "src/share/guard";
 import { NOTI_SERVICE } from "./notification.di-token";
 import { NotificationAction, NotificationCreateDTO } from "./notification.model";
 import { INotificationService } from "./notification.port";
-@Controller('notifications')
+
+// Lớp NotificationController cung cấp các API liên quan đến thông báo
+@Controller('v1/notifications')
 export class NotificationController {
   constructor(
     @Inject(NOTI_SERVICE) private readonly service: INotificationService,
   ) { }
 
+  // API lấy danh sách thông báo
   @Get()
-  @UseGuards(RemoteAuthGuard)
+  @UseGuards(RemoteAuthGuard) // Sử dụng guard RemoteAuthGuard để xác thực người dùng
   @HttpCode(HttpStatus.OK)
   async list(@Query() paging: PagingDTO, @Request() request: ReqWithRequester) {
     const { sub: userId } = request.requester;
@@ -24,8 +27,9 @@ export class NotificationController {
     return paginatedResponse(result, {});
   }
 
+  // API đọc thông báo
   @Post(':id/read')
-  @UseGuards(RemoteAuthGuard)
+  @UseGuards(RemoteAuthGuard) // Sử dụng guard RemoteAuthGuard để xác thực người dùng
   @HttpCode(HttpStatus.OK)
   async read(@Param('id') id: string, @Request() request: ReqWithRequester) {
     const { requester } = request;
@@ -34,8 +38,9 @@ export class NotificationController {
     return { data: result };
   }
 
+  // API đọc tất cả thông báo
   @Post('read-all')
-  @UseGuards(RemoteAuthGuard)
+  @UseGuards(RemoteAuthGuard) // Sử dụng guard RemoteAuthGuard để xác thực người dùng
   @HttpCode(HttpStatus.OK)
   async readAll(@Request() request: ReqWithRequester) {
     const { requester } = request;
@@ -45,7 +50,7 @@ export class NotificationController {
   }
 }
 
-
+// Lớp NotificationMessageController lắng nghe các sự kiện liên quan đến thông báo và cập nhật dữ liệu
 @Controller()
 export class NotificationMessageController {
   constructor(
@@ -56,6 +61,7 @@ export class NotificationMessageController {
     this.subscribe();
   }
 
+  // Xử lý sự kiện người dùng đã thích bài viết
   async handlePostLiked(evt: PostLikedEvent) {
     const { postId } = evt.payload;
     const actorId = evt.senderId!;
@@ -78,6 +84,7 @@ export class NotificationMessageController {
     await this.useCase.create(dto);
   }
 
+  // Xử lý sự kiện người dùng đã theo dõi
   async handleFollowed(evt: FollowedEvent) {
     const { followingId } = evt.payload;
     const actorId = evt.senderId!;
@@ -95,6 +102,7 @@ export class NotificationMessageController {
     await this.useCase.create(dto);
   };
 
+  // Xử lý sự kiện người dùng đã bình luận bài viết
   async handlePostCommented(evt: PostCommentedEvent) {
     const { postId, authorIdOfParentComment } = evt.payload;
     const actorId = evt.senderId!;
@@ -116,19 +124,24 @@ export class NotificationMessageController {
     await this.useCase.create(dto);
   }
 
+  // Phương thức đăng ký lắng nghe sự kiện
   subscribe() {
+
+    // Đăng ký lắng nghe sự kiện người dùng đã theo dõi
     RedisClient.getInstance().subscribe(EvtFollowed, (msg: string) => {
       const data = JSON.parse(msg);
       const evt = FollowedEvent.from(data);
       this.handleFollowed(evt);
     });
 
+    // Đăng ký lắng nghe sự kiện người dùng đã thích bài viết
     RedisClient.getInstance().subscribe(EvtPostLiked, (msg: string) => {
       const data = JSON.parse(msg);
       const evt = PostLikedEvent.from(data);
       this.handlePostLiked(evt);
     });
 
+    // Đăng ký lắng nghe sự kiện người dùng đã bình luận bài viết
     RedisClient.getInstance().subscribe(EvtPostCommented, (msg: string) => {
       const data = JSON.parse(msg);
       const evt = PostCommentedEvent.from(data);

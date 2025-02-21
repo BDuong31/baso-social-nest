@@ -8,6 +8,5 @@ export class AppService {
       <h1 style="color: white">Baso Spark Network API from BASO</h1>
     <div>
       `
-    
   }
 }

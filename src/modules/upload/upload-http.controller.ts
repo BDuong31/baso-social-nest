@@ -4,23 +4,32 @@ import fs from 'fs';
 import { diskStorage } from "multer";
 import { config } from "src/share/config";
 
-@Controller('upload-file')
+// Lớp UploadHttpController cung cấp phương thức upload file
+@Controller('/v1/upload-file')
 export class UploadHttpController {
+
+  // Phương thức upload file
   @Post()
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(FileInterceptor('file', {
+    
+    // Kiểm tra file có phải là hình ảnh không
     fileFilter: (req, file, cb) => {
       const isImage = file.mimetype.startsWith('image');
-    
+
       if (isImage) {
         cb(null, true);
       } else {
         cb(new BadRequestException('Invalid file type'), false);
       }
     },
+
+    // Giới hạn kích thước file
     limits: {
-      fileSize: 512 * 1024 // 512KB
+      fileSize: 512 * 1024 // 512 KB
     },
+    
+    // Lưu file vào thư mục uploads
     storage: diskStorage({
       destination: (req, file, cb) => {
         ensureDirectoryExistence('./uploads');
@@ -33,6 +42,8 @@ export class UploadHttpController {
       }
     }),
   }))
+
+  // Phương thức upload file
   uploadFile(@UploadedFile() file: Express.Multer.File) {
     const fileUploaded = {
       filename: file.originalname,
@@ -47,6 +58,7 @@ export class UploadHttpController {
   }
 }
 
+// Hàm đảm bảo thư mục tồn tại
 const ensureDirectoryExistence = (dirPath: string): void => {
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true });
