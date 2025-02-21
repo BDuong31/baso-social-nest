@@ -1,0 +1,25 @@
+// Use Case Diagram for Social Media
+digraph {
+	User [label="Người dùng" shape=actor]
+	Admin [label="Quản trị viên" shape=actor]
+	UC1 [label="Đăng ký tài khoản" shape=ellipse]
+	UC2 [label="Đăng nhập" shape=ellipse]
+	UC3 [label="Tạo bài viết" shape=ellipse]
+	UC4 [label="Thích bài viết" shape=ellipse]
+	UC5 [label="Chia sẻ bài viết" shape=ellipse]
+	UC6 [label="Nhắn tin" shape=ellipse]
+	UC7 [label="Quản lý hồ sơ cá nhân" shape=ellipse]
+	UC8 [label="Duyệt nội dung bài viết" shape=ellipse]
+	UC9 [label="Xóa bài viết vi phạm" shape=ellipse]
+	UC10 [label="Khóa tài khoản vi phạm" shape=ellipse]
+	User -> UC1
+	User -> UC2
+	User -> UC3
+	User -> UC4
+	User -> UC5
+	User -> UC6
+	User -> UC7
+	Admin -> UC8
+	Admin -> UC9
+	Admin -> UC10
+}

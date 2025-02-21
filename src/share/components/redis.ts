@@ -4,17 +4,19 @@ import { EventHandler } from "..";
 import { AppEvent } from "../data-model";
 import { IEventPublisher } from "../interface";
 
+// RedisClient: Lớp đại diện cho kết nối với Redis
 export class RedisClient implements IEventPublisher {
-  private static instance: RedisClient;
+  private static instance: RedisClient; 
 
   redisClient: RedisClientType;
-  private subscriberMap: Record<string, RedisClientType[]> = {};
+  private subscriberMap: Record<string, RedisClientType[]> = {}; //
 
   private constructor(connectionUrl: string) {
     const url = connectionUrl;
     this.redisClient = createClient({ url });
   }
 
+  // Khởi tạo kết nối với Redis
   public static async init(connectionUrl: string) {
     if (!this.instance) {
       this.instance = new RedisClient(connectionUrl);
@@ -22,6 +24,7 @@ export class RedisClient implements IEventPublisher {
     }
   }
 
+  // Lấy ra một thể hiện của RedisClient
   public static getInstance(): RedisClient {
     if (!this.instance) {
       throw new Error('RedisClient instance not initialized');
@@ -30,6 +33,7 @@ export class RedisClient implements IEventPublisher {
     return this.instance;
   }
 
+  // Kết nối tới Redis
   private async _connect(): Promise<void> {
     try {
       await this.redisClient.connect();
@@ -39,6 +43,7 @@ export class RedisClient implements IEventPublisher {
     }
   }
 
+  // Gửi một sự kiện tới Redis
   public async publish<T>(event: AppEvent<T>): Promise<void> {
     try {
       await this.redisClient.publish(event.eventName, JSON.stringify(event.plainObject()));
@@ -47,8 +52,11 @@ export class RedisClient implements IEventPublisher {
     }
   }
 
+  // Đăng ký một hàm xử lý sự kiện cho một chủ đề
   public async subscribe(topic: string, fn: EventHandler): Promise<void> {
     try {
+
+      // Tạo một thể hiện của RedisClient để đăng ký
       const subscriber = this.redisClient.duplicate();
       await subscriber.connect();
       await subscriber.subscribe(topic, fn);
@@ -60,6 +68,7 @@ export class RedisClient implements IEventPublisher {
     }
   }
 
+  // Ngắt kết nối với Redis
   public async disconnect(): Promise<void> {
     await this.redisClient.disconnect();
     Logger.log('Disconnected redis server');

@@ -1,12 +1,14 @@
 import { UserRole } from "src/share";
 import { z } from "zod";
 
+// Các giới tính
 export enum Gender {
   MALE = 'male',
   FEMALE = 'female',
   UNKNOWN = 'unknown',
 }
 
+// Các vai trò
 export enum Status {
   ACTIVE = 'active',
   PENDING = 'pending',
@@ -45,6 +47,8 @@ export const userSchema = z.object({
       /^[a-zA-Z0-9_]+$/,
       ErrUsernameInvalid.message,
     ),
+  email: z.string().email("Email is invalid"),
+  phone: z.string().min(10).max(15).optional(),
   password: z.string().min(6, ErrPasswordAtLeast6Chars.message),
   salt: z.string().min(8),
   bio: z.string().nullable().optional(),

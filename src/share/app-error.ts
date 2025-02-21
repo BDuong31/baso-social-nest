@@ -21,6 +21,7 @@ export class AppError extends Error {
     return appError;
   }
 
+  // Lấy lỗi gốc
   getRootCause(): Error | null {
     if (this.rootCause) {
       return this.rootCause instanceof AppError ? this.rootCause.getRootCause() : this.rootCause;
@@ -42,16 +43,19 @@ export class AppError extends Error {
     return this;
   }
 
+  // thêm thông báo vào lỗi
   withLog(logMessage: string): AppError {
     this.logMessage = logMessage;
     return this;
   }
 
+  // thêm thông báo vào lỗi
   withMessage(message: string): AppError {
     this.message = message;
     return this;
   }
 
+  // chuyển đổi lỗi thành JSON
   toJSON(isProduction: boolean = true) {
     const rootCause = this.getRootCause();
 
@@ -68,6 +72,7 @@ export class AppError extends Error {
     };
   }
 
+  // Lấy mã trạng thái
   getStatusCode(): number {
     return this.statusCode;
   }
@@ -78,6 +83,7 @@ export const responseErr = (err: Error, res: Response) => {
   const isProduction = process.env.NODE_ENV === 'production';
   !isProduction && console.error(err.stack);
 
+  // Xử lí lỗi
   if (err instanceof AppError) {
     const appErr = err as AppError;
     res.status(appErr.getStatusCode()).json(appErr.toJSON(isProduction));
@@ -85,27 +91,31 @@ export const responseErr = (err: Error, res: Response) => {
     return;
   }
 
+  // Xử lí lỗi Zod
   if (err instanceof ZodError) {
     const zErr = err as ZodError;
     const appErr = ErrInvalidRequest.wrap(zErr);
 
+    // Thêm chi tiết lỗi
     zErr.issues.forEach((issue) => {
       appErr.withDetail(issue.path.join('.'), issue.message);
     });
 
+    // Trả về lỗi
     res.status(appErr.getStatusCode()).json(appErr.toJSON(isProduction));
     return;
   }
 
+  // Xử lí lỗi khác
   const appErr = ErrInternalServer.wrap(err);
   res.status(appErr.getStatusCode()).json(appErr.toJSON(isProduction));
 };
 
-export const ErrInternalServer = AppError.from(new Error('Something went wrong, please try again later.'), 500);
-export const ErrInvalidRequest = AppError.from(new Error('Invalid request'), 400);
-export const ErrUnauthorized = AppError.from(new Error('Unauthorized'), 401);
-export const ErrForbidden = AppError.from(new Error('Forbidden'), 403);
-export const ErrNotFound = AppError.from(new Error('Not found'), 404);
-export const ErrMethodNotAllowed = AppError.from(new Error('Method not allowed'), 405);
-export const ErrTokenInvalid = AppError.from(new Error('Token is invalid'), 401);
+export const ErrInternalServer = AppError.from(new Error('Something went wrong, please try again later.'), 500); // Lỗi server
+export const ErrInvalidRequest = AppError.from(new Error('Invalid request'), 400); // Lỗi yêu cầu không hợp lệ
+export const ErrUnauthorized = AppError.from(new Error('Unauthorized'), 401); // Lỗi không xác thực
+export const ErrForbidden = AppError.from(new Error('Forbidden'), 403); // Lỗi không được phép
+export const ErrNotFound = AppError.from(new Error('Not found'), 404); // Lỗi không tìm thấy
+export const ErrMethodNotAllowed = AppError.from(new Error('Method not allowed'), 405); // Lỗi phương thức không được phép
+export const ErrTokenInvalid = AppError.from(new Error('Token is invalid'), 401); // Lỗi token không hợp lệ
 

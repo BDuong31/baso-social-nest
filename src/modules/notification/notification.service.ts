@@ -6,6 +6,7 @@ import { NOTI_REPOSITORY } from "./notification.di-token";
 import { Notification, NotificationCondition, notificationCondSchema, NotificationCreateDTO, notificationCreateDTOSchema } from "./notification.model";
 import { INotificationRepository, INotificationService } from "./notification.port";
 
+// Lớp NotificationService cung cấp các phương thức xử lý logic liên quan đến thông báo
 @Injectable()
 export class NotificationService implements INotificationService {
   constructor(
@@ -13,6 +14,7 @@ export class NotificationService implements INotificationService {
     @Inject(USER_RPC) private readonly userPublicUseRPC: IPublicUserRpc,
   ) { }
 
+  // Phương thức tạo thông báo mới
   async create(dto: NotificationCreateDTO): Promise<string> {
     const data = notificationCreateDTOSchema.parse(dto);
     const newId = v7();
@@ -30,6 +32,7 @@ export class NotificationService implements INotificationService {
     return newId;
   }
 
+  // Phương thức đọc thông báo
   async read(id: string, requester: Requester): Promise<boolean> {
     const receiverId = requester.sub;
 
@@ -42,12 +45,14 @@ export class NotificationService implements INotificationService {
     return true;
   }
 
+  // Phương thức đọc tất cả thông báo
   async readAll(requester: Requester): Promise<boolean> {
     const receiverId = requester.sub;
     await this.repository.readAll(receiverId);
     return true;
   }
 
+  // Phương thức lấy danh sách thông báo
   async list(cond: NotificationCondition, paging: PagingDTO): Promise<Paginated<Notification>> {
     const condition = notificationCondSchema.parse(cond);
 

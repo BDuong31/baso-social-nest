@@ -1,3 +1,4 @@
+import e from "express";
 import { v7 } from "uuid";
 import z from "zod";
 
@@ -24,21 +25,26 @@ export const publicUserSchema = z.object({
   username: z.string(),
   firstName: z.string(),
   lastName: z.string(),
+  phone: z.string().min(10),
+  email: z.string().email(),
   avatar: z.string().url(),
 });
 
+// Kiểu dữ liệu của người dùng công khai
 export interface PublicUser extends z.infer<typeof publicUserSchema> {}
 
-
+// Schema của phân trang
 export const pagingDTOSchema = z.object({
   page: z.coerce.number().min(1, { message: 'Page number must be at least 1' }).default(1),
   limit: z.coerce.number().min(1, { message: 'Limit must be at least 1' }).max(100).default(20),
   sort: z.string().optional(),
   order: z.string().optional(),
 });
+
+// Kiểu dữ liệu của phân trang
 export interface PagingDTO extends z.infer<typeof pagingDTOSchema> { total?: number; }
 
-
+// Kiểu dữ liệu phân trang
 export type Paginated<E> = {
   data: E[];
   paging: PagingDTO,
@@ -58,6 +64,7 @@ export class PubSubMessage {
   }
 }
 
+// Schema của chủ đề
 export const topicSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
@@ -66,8 +73,10 @@ export const topicSchema = z.object({
   updatedAt: z.date(),
 });
 
+// Kiểu dữ liệu của chủ đề
 export interface Topic extends z.infer<typeof topicSchema> {}
 
+// Schema của bài viết
 export const postSchema = z.object({
   id: z.string().uuid(),
   authorId: z.string().uuid(),
@@ -84,13 +93,14 @@ export const postSchema = z.object({
   updatedAt: z.date().default(new Date()),
 });
 
+//
 export interface Post extends z.infer<typeof postSchema> {}
 
 
-// 200Lab note: For event-driven architecture
-// All events should extend this class
+// Ghi chú Baso: Dành cho kiến ​​trúc hướng sự kiện
+// Tất cả các sự kiện nên kế thừa lớp này
 export abstract class AppEvent<Payload> {
-  private _id: string;
+  private _id: string; // 
   private _occurredAt: Date;
   private _senderId?: string;
 
@@ -108,26 +118,32 @@ export abstract class AppEvent<Payload> {
     this._senderId = dtoProps?.senderId;
   }
 
+  // Lấy tên sự kiện
   get eventName(): string {
     return this._eventName;
   }
 
+  // Lấy id sự kiện
   get id(): string {
     return this._id;
   }
 
+  // Lấy thời gian xảy ra sự kiện
   get occurredAt(): Date {
     return this._occurredAt;
   }
 
+  // Lấy id người gửi
   get senderId(): string | undefined {
     return this._senderId;
   }
 
+  // Lấy dữ liệu sự kiện
   get payload(): Payload {
     return this._payload;
   }
 
+  // Chuyển đổi sự kiện thành đối tượng bình thường
   plainObject() {
     return {
       id: this._id,
