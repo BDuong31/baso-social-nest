@@ -31,6 +31,7 @@ export class UserService implements IUserService {
     const newId = v7();
     const newUser: User = {
       ...data,
+      phone: '',
       password: hashPassword,
       id: newId,
       status: Status.ACTIVE,
@@ -72,6 +73,49 @@ export class UserService implements IUserService {
     const role = user.role;
     const token = await this.tokenProvider.generateToken({ sub: user.id, role });
     return token;
+  }
+
+  // Phương thức đăng nhập bằng google
+  async googleLogin(dto : UserRegistrationDTO): Promise<string> {
+    const data = userRegistrationDTOSchema.parse(dto);
+
+    // Kiểm tra xem user đã tồn tại hay chưa
+    const user = await this.userRepo.findByCond({ email: data.email });
+
+    const salt = bcrypt.genSaltSync(8);
+    const hashPassword = await bcrypt.hash(`${data.password}.${salt}`, 10);
+
+    //Nếu chưa có, tự động đăng ký tài khoản mới
+    if (!user) {
+      const newId = v7();
+      const newUser: User = {
+        ...data,
+        phone: '',
+        password: hashPassword,
+        id: newId,
+        status: Status.ACTIVE,
+        salt: '',
+        role: UserRole.USER,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        followerCount: 0,
+        postCount: 0,
+      };
+      await this.userRepo.insert(newUser);
+      const role = newUser.role;
+      const token = await this.tokenProvider.generateToken({ sub: newUser.id, role });
+      return token;
+      console.log('Đăng ký tài khoản mới thành công');
+    } else {
+
+      if (user.status === Status.DELETED || user.status === Status.INACTIVE) {
+        throw AppError.from(ErrUserInactivated, 400);
+      }
+
+      const role = user.role;
+      const token = await this.tokenProvider.generateToken({ sub: user.id, role });
+      return token;
+    }
   }
 
   // Phương thức xác thực token

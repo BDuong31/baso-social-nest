@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, NotFoundException, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
-import { paginatedResponse, PagingDTO, pagingDTOSchema, UserRole } from 'src/share';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, NotFoundException, Param, Patch, Post,Request, Query, UseGuards } from '@nestjs/common';
+import { paginatedResponse, PagingDTO, pagingDTOSchema, ReqWithRequesterOpt, UserRole } from 'src/share';
 import { RemoteAuthGuard, Roles, RolesGuard } from 'src/share/guard';
 import { CHAT_MESSAGE_REPOSITORY, CHAT_MESSAGE_SERVICE } from '../chat-message.di-token';
 import { ChatMessageCondDTO, ChatMessageCreationDTO, ChatMessageUpdateDTO } from '../model';
@@ -12,7 +12,7 @@ export class ChatMessageController {
         @Inject(CHAT_MESSAGE_SERVICE) private readonly service: IChatMessageService) {}
     
     // Phương thức tạo tin nhắn chat
-    @Get(':id')
+   // @Get(':id')
     @Post()
     @HttpCode(HttpStatus.OK)
     async createChatMessage(@Body() dto: ChatMessageCreationDTO) {
@@ -37,12 +37,11 @@ export class ChatMessageController {
     }
 
     // Phương thức lấy danh sách tin nhắn chat
-    @Get()
+    @Get(':id')
     @HttpCode(HttpStatus.OK)
-    async listChatMessages(@Query() pading: PagingDTO, @Query() dto: ChatMessageCondDTO) {
-        const paging = pagingDTOSchema.parse(pading);
-        const data = await this.service.list(dto, paging);
-        return paginatedResponse(data, dto);
+    async listChatMessages(@Request() req: ReqWithRequesterOpt, @Param('id') id: string) {
+        const data = await this.service.list({ roomId: id });
+        return data
     }
 }
 

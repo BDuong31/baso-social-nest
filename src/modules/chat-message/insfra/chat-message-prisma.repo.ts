@@ -31,31 +31,26 @@ export class ChatMessagePrismaRepository implements IChatMessageRepository {
 
     // Phương thức lấy thông tin tin nhắn chat theo điều kiện
     async findByCond(condition: ChatMessageCondDTO): Promise<ChatMessage | null> {
-        const chatMessage = await prisma.chatMessages.findFirst({ where: condition });
+        const chatMessage = await prisma.chatMessages.findFirst({ 
+            where: condition, 
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
         return chatMessage as ChatMessage;
     }
 
     // Phương thức lấy danh sách tin
-    async list(condition: ChatMessageCondDTO, paging: PagingDTO): Promise<Paginated<ChatMessage>> {
-        const skip = (paging.page - 1) * paging.limit;
+    async list(condition: ChatMessageCondDTO): Promise<ChatMessage[]> {
 
-        const total = await prisma.chatMessages.count({
-             where:{roomId: condition.roomId}
-        });
         const data = await prisma.chatMessages.findMany({
             where: { roomId: condition.roomId },
-            take: paging.limit,
-            skip,
             orderBy: {
-                id: 'desc'
+                createdAt: 'asc'
             }
         });
 
-        return {
-            data: data as ChatMessage[],
-            paging,
-            total
-        };
+        return data as ChatMessage[]
     }
 
     // Phương thức lấy danh sách tin nhắn chat theo id

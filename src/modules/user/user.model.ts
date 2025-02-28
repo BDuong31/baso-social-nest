@@ -42,11 +42,11 @@ export const userSchema = z.object({
   username: z
     .string()
     .min(3, ErrUsernameAtLeast3Chars.message)
-    .max(25, ErrUsernameAtMost25Chars.message)
-    .regex(
-      /^[a-zA-Z0-9_]+$/,
-      ErrUsernameInvalid.message,
-    ),
+    .max(25, ErrUsernameAtMost25Chars.message),
+    // .regex(
+    //   /^[a-zA-Z0-9_]+$/,
+    //   ErrUsernameInvalid.message,
+    // ),
   email: z.string().email("Email is invalid"),
   phone: z.string().min(10).max(15).optional(),
   password: z.string().min(6, ErrPasswordAtLeast6Chars.message),

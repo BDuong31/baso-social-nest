@@ -59,8 +59,8 @@ export class ChatMessageService implements IChatMessageService {
         await this.chatMessageRepo.delele(id);
     }
 
-    async list(condition: ChatMessageCondDTO, paging: PagingDTO): Promise<Paginated<ChatMessage>> {
-        const data = await this.chatMessageRepo.list(condition, paging);
-        return await this.chatMessageRepo.list(condition, paging);
+    async list(condition: ChatMessageCondDTO): Promise<ChatMessage[]> {
+        const data = await this.chatMessageRepo.list(condition);
+        return await this.chatMessageRepo.list(condition);
     }
 }

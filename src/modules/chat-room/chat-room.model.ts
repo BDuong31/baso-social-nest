@@ -1,4 +1,6 @@
+import { PublicUser } from "src/share/data-model";
 import z from "zod";
+import { ChatMessage } from "../chat-message/model";
 
 // Lỗi thông tin
 export const ErrChatRoomNotFound = new Error("Chat room not found");
@@ -33,7 +35,7 @@ export const chatRoomSchema = z.object({
   });
 
 // Kiểu dữ liệu cho dữ liệu phòng chat
-export type ChatRoom = z.infer<typeof chatRoomSchema>;
+export type ChatRoom = z.infer<typeof chatRoomSchema> & { messager?: PublicUser, messages?: ChatMessage };
 
 // Schema cho dữ liệu tạo phòng chat
 export const chatRoomCreationDTOSchema = chatRoomSchema.pick({

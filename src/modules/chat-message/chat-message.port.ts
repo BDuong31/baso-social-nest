@@ -8,7 +8,7 @@ export interface IChatMessageService {
     get(id: string): Promise<ChatMessage>; // Phương thức lấy thông tin tin nhắn chat
     update(id: string, data: ChatMessageUpdateDTO): Promise<void>; // Phương thức cập nhật thông tin tin nhắn chat
     delete(id: string): Promise<void>; // Phương thức xóa tin nhắn chat
-    list(condition: ChatMessageCondDTO, paging: PagingDTO): Promise<Paginated<ChatMessage>>; // Phương thức lấy danh sách tin nhắn chat
+    list(condition: ChatMessageCondDTO): Promise<ChatMessage[]>; // Phương thức lấy danh sách tin nhắn chat
 }
 
 // Interface IChatMessageRepository định nghĩa các phương thức cần thiết để thao tác với cơ sở dữ liệu
@@ -25,6 +25,6 @@ export interface IChatMessageCommandRepository {
 export interface IChatMessageQueryRepository {
     findById(id: string): Promise<ChatMessage | null>; // Phương thức lấy thông tin tin nhắn chat theo id
     findByCond(condition: ChatMessageCondDTO): Promise<ChatMessage | null>; // Phương thức lấy thông tin tin nhắn chat theo điều kiện
-    list(condition: ChatMessageCondDTO, paging: PagingDTO): Promise<Paginated<ChatMessage>>; // Phương thức lấy danh sách tin nhắn chat
+    list(condition: ChatMessageCondDTO): Promise<ChatMessage[]>; // Phương thức lấy danh sách tin nhắn chat
     findByIds(ids: string[]): Promise<ChatMessage[]>; // Phương thức lấy danh sách tin nhắn chat theo id
 }

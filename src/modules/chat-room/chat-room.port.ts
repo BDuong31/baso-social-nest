@@ -8,7 +8,7 @@ export interface IChatRoomService {
     get(id: string): Promise<ChatRoom>; // Phương thức lấy thông tin phòng chat
     update(id: string, data: ChatRoomUpdateDTO): Promise<void>; // Phương thức cập nhật thông tin phòng chat
     delete(id: string): Promise<void>; // Phương thức xóa phòng chat
-    list(condition: ChatRoomCondDTO, paging: PagingDTO): Promise<Paginated<ChatRoom>>; // Phương thức lấy danh sách phòng chat
+    list(userId: string): Promise<ChatRoom[]>; // Phương thức lấy danh sách phòng chat
 }
 
 // Interface IChatRoomRepository định nghĩa các phương thức cần thiết để thao tác với cơ sở dữ liệu
@@ -25,6 +25,6 @@ export interface IChatRoomCommandRepository {
 export interface IChatRoomQueryRepository {
     findById(id: string): Promise<ChatRoom | null>; // Phương thức lấy thông tin phòng chat theo id
     findByCond(condition: ChatRoomCondDTO): Promise<ChatRoom | null>; // Phương thức lấy thông tin phòng chat theo điều kiện
-    list(condition: ChatRoomCondDTO, paging: PagingDTO): Promise<Paginated<ChatRoom>>; // Phương thức lấy danh sách phòng chat
+    list(userId: string): Promise<ChatRoom[]>; // Phương thức lấy danh sách phòng chat
     findByIds(ids: string[]): Promise<ChatRoom[]>; // Phương thức lấy danh sách phòng chat theo id
 }

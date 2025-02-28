@@ -70,8 +70,9 @@ async delete(id: string): Promise<void> {
 }
 
 // Phương thức lấy danh sách phòng chat
-  async list(condition: ChatRoomCondDTO, paging: PagingDTO): Promise<Paginated<ChatRoom>> {
-    const dto = chatRoomCondDTOSchema.parse(condition);
-    return await this.chatRoomRepo.list(dto, paging);
+  async list(userId: string): Promise<ChatRoom[]> {
+    console.log('condition', userId);
+    //const dto = chatRoomCondDTOSchema.parse(userId);
+    return await this.chatRoomRepo.list(userId);
   }
 }

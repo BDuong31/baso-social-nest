@@ -38,38 +38,18 @@ export class ChatRoomPrismaRepository implements IChatRoomRepository {
     }
 
     //
-    async list(condition: ChatRoomCondDTO, paging: PagingDTO): Promise<Paginated<ChatRoom>> {
-        const skip = (paging.page - 1) * paging.limit;
-
-        console.log('condition', condition);
-
-        const total = await prisma.chatRoom.count({
-             where:{
-                OR: [
-                    { creatorId: condition.creatorId, receiverId: condition.receiverId },
-                    { creatorId: condition.receiverId, receiverId: condition.creatorId }
-                ]
-             }});
-        console.log('total', total);
+    async list(userId: string): Promise<ChatRoom[]> {
+        console.log('condition', userId);
         const data = await prisma.chatRoom.findMany({
             where: {
                 OR: [
-                    { creatorId: condition.creatorId, receiverId: condition.receiverId },
-                    { creatorId: condition.receiverId, receiverId: condition.creatorId }
+                    { creatorId: userId},
+                    { receiverId: userId }
                 ]
             },
-            take: paging.limit,
-            skip,
-            orderBy: {
-                id: 'desc'
-            }
         });
 
-        return {
-            data: data as ChatRoom[],
-            paging,
-            total
-        };
+        return data as ChatRoom[];
     }
 
     // Phương thức lấy danh sách phòng chat theo id

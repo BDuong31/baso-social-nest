@@ -1,15 +1,24 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, NotFoundException, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
-import { paginatedResponse, PagingDTO, pagingDTOSchema, UserRole } from 'src/share';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, NotFoundException, Param, Patch, Post,Request, Query, UseGuards } from '@nestjs/common';
+import { paginatedResponse, PagingDTO, pagingDTOSchema,PublicUser,ReqWithRequester, UserRole } from 'src/share';
 import { RemoteAuthGuard, Roles, RolesGuard } from 'src/share/guard';
-import { CHAT_ROOM_REPOSITORY, CHAT_ROOM_SERVICE } from './chat-room.di-token';
-import { ChatRoomCondDTO, ChatRoomCreationDTO, ChatRoomUpdateDTO } from './chat-room.model';
+import { USER_RPC } from "src/share/di-token";
+import { IAuthorRpc, ReqWithRequesterOpt } from "src/share/interface";
+import { CHAT_MESSAGE_REPOSITORY, CHAT_ROOM_REPOSITORY, CHAT_ROOM_SERVICE } from './chat-room.di-token';
+import { ChatRoom, ChatRoomCondDTO, ChatRoomCreationDTO, ChatRoomUpdateDTO } from './chat-room.model';
 import { IChatRoomRepository, IChatRoomService } from './chat-room.port';
+import { Request as ExpressRequest } from 'express';
+import { IUserService } from '../user/user.port';
+import { ChatRoomModule } from './chat-room.module';
+import { IChatMessageRepository } from '../chat-message/chat-message.port';
 
 // Lớp ChatRoomController xử lý các request liên quan đến phòng chat
 @Controller('v1/chat-rooms')
 export class ChatRoomController {
     constructor(
-        @Inject(CHAT_ROOM_SERVICE) private readonly service: IChatRoomService) {}
+        @Inject(CHAT_ROOM_SERVICE) private readonly service: IChatRoomService,    
+        @Inject(USER_RPC) private readonly userRPC: IAuthorRpc,
+        @Inject(CHAT_MESSAGE_REPOSITORY) private readonly chatMessageRepo: IChatMessageRepository
+    ) {}
 
     // Phương thức tạo phòng chat mới
     @Post()
@@ -39,13 +48,51 @@ export class ChatRoomController {
     }
 
     // Phương thức lấy danh sách phòng chat
+    // @Get()
+    // @UseGuards(RemoteAuthGuard, RolesGuard) // Sử dụng guard để xác thực token
+    // @HttpCode(HttpStatus.OK)
+    // async listChatRooms(@Query() pading: PagingDTO, @Query() dto: ChatRoomCondDTO) {
+    //     const paging = pagingDTOSchema.parse(pading);
+    //     const data = await this.service.list(dto, paging);
+    //     return paginatedResponse(data, dto);
+    // }
     @Get()
-    @UseGuards(RemoteAuthGuard, RolesGuard) // Sử dụng guard để xác thực token
+    @UseGuards(RemoteAuthGuard, RolesGuard)
     @HttpCode(HttpStatus.OK)
-    async listChatRooms(@Query() pading: PagingDTO, @Query() dto: ChatRoomCondDTO) {
-        const paging = pagingDTOSchema.parse(pading);
-        const data = await this.service.list(dto, paging);
-        return paginatedResponse(data, dto);
+    async listChatRooms(@Request() request: ReqWithRequester) {
+        const userId = request.requester.sub;
+        const data = await this.service.list(userId); 
+
+        const messengerIds = data.map((item) => {
+            return item.creatorId == userId ? item.receiverId : item.creatorId;
+        });
+
+        const users = await this.userRPC.findByIds(messengerIds);
+
+        const userMap: Record<string, PublicUser> = {};
+
+        users.forEach((u: PublicUser) => {
+            userMap[u.id] = u;
+        });
+
+        console.log('userMap', userMap);
+
+        const result = await Promise.all(data.map(async (item) => {
+            const messagerId = item.creatorId == userId ? item.receiverId : item.creatorId;
+            const messager = userMap[messagerId];
+            const dataMessage = await this.chatMessageRepo.findByCond({ roomId: item.id });
+            console.log('dataMessage', dataMessage);
+            console.log('messenger', item.id);
+            return {
+                ...item,
+                messager: messager,
+                messages: dataMessage
+            } as ChatRoom;
+        }));
+
+        console.log('result', result);
+
+        return { result };
     }
 }
 

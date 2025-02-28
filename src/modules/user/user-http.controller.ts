@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, Patch, Post, Request, UseGuards } from "@nestjs/common";
+import { Body,Req, Res, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, Patch, Post, Request, UseGuards } from "@nestjs/common";
 import { Request as ExpressRequest } from "express";
 import { AppError, ErrNotFound, ReqWithRequester, UserRole } from "src/share";
 import { RemoteAuthGuard, Roles, RolesGuard } from "src/share/guard";
@@ -6,6 +6,7 @@ import { USER_REPOSITORY, USER_SERVICE } from "./user.di-token";
 import { UserLoginDTO, UserRegistrationDTO, UserUpdateDTO, UserUpdateProfileDTO } from "./user.dto";
 import { ErrInvalidToken, User } from "./user.model";
 import { IUserRepository, IUserService } from "./user.port";
+import { AuthGuard } from "@nestjs/passport";
 
 // Lớp UserHttpController cung cấp các phương thức xử lý request HTTP
 @Controller()
@@ -27,6 +28,13 @@ export class UserHttpController {
   @HttpCode(HttpStatus.OK)
   async authenticate(@Body() dto: UserLoginDTO) {
     const data = await this.userService.login(dto);
+    return { data };
+  }
+
+  @Post('v1/google-login')
+  @HttpCode(HttpStatus.OK)
+  async googleLogin(@Body() dto: UserRegistrationDTO) {
+    const data = await this.userService.googleLogin(dto);
     return { data };
   }
 
@@ -56,8 +64,8 @@ export class UserHttpController {
 
   // Phương thức cập nhật thông tin người dùng
   @Patch('v1/users/:id')
-  @UseGuards(RemoteAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  //@UseGuards(RemoteAuthGuard, RolesGuard)
+  //@Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
   async updateUser(@Request() req: ReqWithRequester, @Param('id') id: string, @Body() dto: UserUpdateDTO) {
     const requester = req.requester;
@@ -120,3 +128,4 @@ export class UserRpcHttpController {
     return rest;
   }
 }
+

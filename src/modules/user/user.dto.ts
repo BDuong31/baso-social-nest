@@ -3,10 +3,10 @@ import { userSchema } from './user.model';
 
 // Định nghĩa schema cho đăng ký người dùng
 export const userRegistrationDTOSchema = userSchema.pick({
+    avatar: true,
     firstName: true,
     lastName: true,
     email: true,
-    phone: true,
     username: true,
     password: true,
 }).required();

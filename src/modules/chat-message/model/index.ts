@@ -39,7 +39,6 @@ export type ChatMessageUpdateDTO = z.infer<typeof ChatMessageUpdateDTOSchema>;
 // Schema cho điều kiện lọc tin nhắn chat
 export const ChatMessageCondDTOSchema = z.object({
   roomId: z.string(),
-  senderId: z.string(),
 }).partial();
 
 export type ChatMessageCondDTO = z.infer<typeof ChatMessageCondDTOSchema>;
