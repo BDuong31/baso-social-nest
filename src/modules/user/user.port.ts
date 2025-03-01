@@ -1,5 +1,5 @@
 import { Requester, TokenPayload } from "src/share";
-import { UserCondDTO, UserLoginDTO, UserRegistrationDTO, UserUpdateDTO} from "./user.dto";
+import { UserCondDTO, UserLoginDTO, UserRegistrationDTO, UserUpdateDTO, UserUpdatePasswordDTO} from "./user.dto";
 import { User } from "./user.model";
 
 // Định nghĩa các phương thức mà UserService cần phải cung cấp
@@ -8,7 +8,8 @@ export interface IUserService {
     login(dto: UserLoginDTO): Promise<string>  // Đăng nhập
     googleLogin(dto: UserRegistrationDTO): Promise<string> // Đăng nhập bằng Google
     profile(userId: string): Promise<Omit<User, 'password' | 'salt'>> // Lấy thông tin người dùng
-    update(requester: Requester, userId: string, dto: UserUpdateDTO): Promise<void> // Cập nhật thông tin người dùng
+    update(requester: Requester, userId: string, dto: UserUpdateDTO): Promise<Omit<User, 'password' | 'salt'>> // Cập nhật thông tin người dùng
+    updatePassword(requester: Requester, userId: string, dto: UserUpdatePasswordDTO): Promise<void> // Cập nhật mật khẩu
     delete(requester: Requester, userId: string): Promise<void>  // Xóa người dùng
     // Kiểm tra mã token
     introspectToken(token: string): Promise<TokenPayload>;

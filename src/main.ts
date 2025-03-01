@@ -5,10 +5,6 @@ import { ValidationPipe } from '@nestjs/common';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import * as swaggerUi from 'swagger-ui-express';
 import { Request, Response, NextFunction } from 'express';
-<<<<<<< HEAD
-import { join } from 'path';
-=======
->>>>>>> efdaa49413429817742950fdd6e8c5b28e4b7b6b
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -57,4 +53,3 @@ async function bootstrap() {
 
 // Khởi chạy ứng dụng
 bootstrap();
->>>>>>> efdaa49413429817742950fdd6e8c5b28e4b7b6b

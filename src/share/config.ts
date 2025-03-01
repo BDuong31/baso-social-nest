@@ -28,9 +28,9 @@ export const config = {
   
   // Cấu hình Redis
   redis: {
-    host: process.env.REDIS_HOST || '209.74.86.107',
+    host: process.env.REDIS_HOST || 'localhost',
     port: parseInt(process.env.REDIS_PORT || '6379'),
-    url: process.env.REDIS_URL || 'redis://:baso_redis@209.74.86.107:6379/0'
+    url: process.env.REDIS_URL || 'redis://:baso_redis@localhost:6379/0'
   },
 
   // Cấu hình cơ sở dữ liệu
@@ -46,9 +46,9 @@ export const config = {
   upload: {
     type: 'local',
     path: 'uploads',
-    cdn: process.env.CDN_URL || `http://209.74.86.107:${port}/uploads`
+    cdn: process.env.CDN_URL || `http://localhost:${port}/uploads`
   },
 
   // Cấu hình cơ sở dữ liệu
-  dbURL: `postgresql://baso:baso_secret@209.74.86.107:5432/baso-social?connection_limit=50`
+  dbURL: `postgresql://baso:baso_secret@localhost:5432/baso-social?connection_limit=50`
 };

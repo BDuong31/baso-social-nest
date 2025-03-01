@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import jwt from 'jsonwebtoken';
 import { ITokenProvider, TokenPayload } from "../interface";
+import ms , { StringValue } from "ms";
 
 // Lớp JwtTokenService cung cấp các phương thức tạo và xác thực token JWT
 @Injectable()
@@ -15,9 +16,10 @@ export class JwtTokenService implements ITokenProvider {
 
   // Tạo một token từ dữ liệu payload
   async generateToken(payload: TokenPayload): Promise<string> {
-    return jwt.sign(payload, this.secretKey, { expiresIn: this.expiresIn });
+    return jwt.sign(payload, this.secretKey, {
+      expiresIn: this.expiresIn as StringValue | number,
+    });
   }
-
   // Xác thực token
   async verifyToken(token: string): Promise<TokenPayload | null> {
     try {

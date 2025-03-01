@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { userSchema } from './user.model';
+import { ErrPasswordAtLeast6Chars, userSchema } from './user.model';
 
 // Định nghĩa schema cho đăng ký người dùng
 export const userRegistrationDTOSchema = userSchema.pick({
@@ -9,7 +9,7 @@ export const userRegistrationDTOSchema = userSchema.pick({
     email: true,
     username: true,
     password: true,
-}).required();
+}).partial({ avatar: true });
 
 // Định nghĩa schema cho đăng nhập người dùng
 export const userLoginDTOSchema = userSchema.pick({
@@ -41,6 +41,13 @@ export const userUpdateDTOSchema = userSchema.pick({
 
 // Định nghĩa kiểu dữ liệu cho DTO cập nhật thông tin người dùng
 export interface UserUpdateDTO extends z.infer<typeof userUpdateDTOSchema>{}
+
+export const userUpdatePasswordDTOSchema = z.object({
+    oldpassword: z.string(),
+    password: z.string(),
+}).required();
+
+export interface UserUpdatePasswordDTO extends z.infer<typeof userUpdatePasswordDTOSchema>{}
 
 // Baso TODO: không cho phép cập nhật vai trò và trạng thái
 // chỉ cho phép cập nhập vai trò và trạng thái cho quản trị viên

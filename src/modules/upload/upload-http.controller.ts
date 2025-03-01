@@ -26,7 +26,7 @@ export class UploadHttpController {
 
     // Giới hạn kích thước file
     limits: {
-      fileSize: 512 * 1024 // 512 KB
+      fileSize: 512 * 1024 * 1024 // 512 MB
     },
     
     // Lưu file vào thư mục uploads

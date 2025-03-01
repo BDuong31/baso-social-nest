@@ -3,7 +3,7 @@ import { Request as ExpressRequest } from "express";
 import { AppError, ErrNotFound, ReqWithRequester, UserRole } from "src/share";
 import { RemoteAuthGuard, Roles, RolesGuard } from "src/share/guard";
 import { USER_REPOSITORY, USER_SERVICE } from "./user.di-token";
-import { UserLoginDTO, UserRegistrationDTO, UserUpdateDTO, UserUpdateProfileDTO } from "./user.dto";
+import { UserLoginDTO, UserRegistrationDTO, UserUpdateDTO, UserUpdateProfileDTO, UserUpdatePasswordDTO } from "./user.dto";
 import { ErrInvalidToken, User } from "./user.model";
 import { IUserRepository, IUserService } from "./user.port";
 import { AuthGuard } from "@nestjs/passport";
@@ -58,7 +58,16 @@ export class UserHttpController {
   @HttpCode(HttpStatus.OK)
   async updateProfile(@Request() req: ReqWithRequester, @Body() dto: UserUpdateProfileDTO) {
     const requester = req.requester;
-    await this.userService.update(requester, requester.sub, dto);
+    const data = await this.userService.update(requester, requester.sub, dto);
+    return { data: data };
+  }
+
+  @Patch('v1/update-password')
+  @UseGuards(RemoteAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async updatePassword(@Request() req: ReqWithRequester, @Body() dto: UserUpdatePasswordDTO) {
+    const requester = req.requester;
+    const data = await this.userService.updatePassword(requester, requester.sub, dto);
     return { data: true };
   }
 

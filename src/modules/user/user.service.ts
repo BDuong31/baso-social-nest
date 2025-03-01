@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import { AppError, ErrForbidden, ErrNotFound, ITokenProvider, Requester, TokenPayload, UserRole } from "src/share";
 import { v7 } from "uuid";
 import { TOKEN_PROVIDER, USER_REPOSITORY } from "./user.di-token";
-import { UserLoginDTO, userLoginDTOSchema, UserRegistrationDTO, userRegistrationDTOSchema, UserUpdateDTO, userUpdateDTOSchema } from "./user.dto";
+import { UserLoginDTO, userLoginDTOSchema, UserRegistrationDTO, userRegistrationDTOSchema, UserUpdateDTO, userUpdateDTOSchema, UserUpdatePasswordDTO, userUpdatePasswordDTOSchema } from "./user.dto";
 import { ErrInvalidToken, ErrInvalidUsernameAndPassword, ErrUserInactivated, ErrUsernameExisted, Status, User } from "./user.model";
 import { IUserRepository, IUserService } from "./user.port";
 
@@ -162,7 +162,7 @@ export class UserService implements IUserService {
   }
 
   // Phương thức cập nhật thông tin người dùng
-  async update(requester: Requester, userId: string, dto: UserUpdateDTO): Promise<void> {
+  async update(requester: Requester, userId: string, dto: UserUpdateDTO): Promise<Omit<User, 'password' | 'salt'>> {
     // 1. Kiểm tra quyền hạn
     if (requester.role !== UserRole.ADMIN && requester.sub !== userId) {
       throw AppError.from(ErrForbidden, 400);
@@ -179,6 +179,39 @@ export class UserService implements IUserService {
 
     // 4. Cập nhật thông tin người dùng
     await this.userRepo.update(userId, data);
+
+    const { password, salt, ...rest } = user;
+
+    return rest;
+  }
+
+  async updatePassword(requester: Requester, userId: string, dto: UserUpdatePasswordDTO): Promise<void> {
+    // 1. Kiểm tra quyền hạn
+    if (requester.role !== UserRole.ADMIN && requester.sub !== userId) {
+      throw AppError.from(ErrForbidden, 400);
+    }
+
+    // 2. Kiểm tra dữ liệu đầu vào
+    const data = userUpdatePasswordDTOSchema.parse(dto);
+
+    // 3. Kiểm tra người dùng
+    const user = await this.userRepo.get(userId);
+    if (!user) {
+      throw AppError.from(ErrNotFound, 400);
+    }
+
+    //4. Kiểm tra mật khẩu cũ
+    const isMatch = await bcrypt.compare(`${data.oldpassword}.${user.salt}`, user.password);
+    if (!isMatch) {
+      throw AppError.from(ErrInvalidUsernameAndPassword, 400).withLog('Old password is incorrect');
+    }
+
+    // 5. Tạo Salt và Mật khẩu mã hoá
+    const salt = bcrypt.genSaltSync(8);
+    const hashPassword = await bcrypt.hash(`${data.password}.${salt}`, 10);
+
+    // 6. Cập nhật mật khẩu
+    await this.userRepo.update(userId, { password: hashPassword, salt });
   }
 
   // Phương thức xóa người dùng
