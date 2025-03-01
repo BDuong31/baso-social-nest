@@ -6,7 +6,6 @@ import { UserHttpController, UserRpcHttpController } from './user-http.controlle
 import { UserPrismaRepository } from './user-prisma.repo';
 import { TOKEN_PROVIDER, USER_REPOSITORY, USER_SERVICE } from './user.di-token';
 import { UserService } from './user.service';
-import { GoogleStrategy } from './google.strategy';
 import { ConfigModule } from '@nestjs/config';
 
 // Khai báo các Provider
@@ -27,7 +26,7 @@ const tokenProvider: Provider = { provide: TOKEN_PROVIDER, useValue: tokenJWTPro
 @Module({
   imports: [ShareModule, ConfigModule],
   controllers: [UserHttpController, UserRpcHttpController],
-  providers: [...repositories, ...services, tokenProvider, GoogleStrategy],
+  providers: [...repositories, ...services, tokenProvider],
 })
 
 export class UserModule {}
