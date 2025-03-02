@@ -16,21 +16,21 @@ export const config = {
   // Cấu hình giao tiếp giữa các service
   rpc: {
     jwtSecret: process.env.JWT_SECRET_KEY || 'baso', // Mã bí mật JWT
-    introspectUrl: process.env.VERIFY_TOKEN_URL || `http://localhost:${port}/v1/rpc/introspect`, // Đường dẫn kiểm tra token
-    postServiceURL: process.env.POST_SERVICE_URL || `http://localhost:${port}/v1`, // Đường dẫn giao tiếp với post service
-    userServiceURL: process.env.USER_SERVICE_URL || `http://localhost:${port}/v1`, // Đường dẫn giao tiếp với user service
-    commentServiceURL: process.env.COMMENT_SERVICE_URL || `http://localhost:${port}/v1`, // Đường dẫn giao tiếp với comment service
-    followServiceURL: process.env.FOLLOW_SERVICE_URL || `http://localhost:${port}/v1`, // Đường dẫn giao tiếp với follow service
-    topicServiceURL: process.env.TOPIC_SERVICE_URL || `http://localhost:${port}/v1`, // Đường dẫn giao tiếp với topic service
-    postLikeServiceURL: process.env.POST_LIKE_SERVICE_URL || `http://localhost:${port}/v1`, // Đường dẫn giao tiếp với post like service
-    postSavedServiceURL: process.env.POST_SAVED_SERVICE_URL || `http://localhost:${port}/v1` // Đường dẫn giao tiếp với post saved service
+    introspectUrl: process.env.VERIFY_TOKEN_URL || `http://basospark.youthscience.club:${port}/v1/rpc/introspect`, // Đường dẫn kiểm tra token
+    postServiceURL: process.env.POST_SERVICE_URL || `http://basospark.youthscience.club:${port}/v1`, // Đường dẫn giao tiếp với post service
+    userServiceURL: process.env.USER_SERVICE_URL || `http://basospark.youthscience.club:${port}/v1`, // Đường dẫn giao tiếp với user service
+    commentServiceURL: process.env.COMMENT_SERVICE_URL || `http://basospark.youthscience.club:${port}/v1`, // Đường dẫn giao tiếp với comment service
+    followServiceURL: process.env.FOLLOW_SERVICE_URL || `http://basospark.youthscience.club:${port}/v1`, // Đường dẫn giao tiếp với follow service
+    topicServiceURL: process.env.TOPIC_SERVICE_URL || `http://basospark.youthscience.club:${port}/v1`, // Đường dẫn giao tiếp với topic service
+    postLikeServiceURL: process.env.POST_LIKE_SERVICE_URL || `http://basospark.youthscience.club:${port}/v1`, // Đường dẫn giao tiếp với post like service
+    postSavedServiceURL: process.env.POST_SAVED_SERVICE_URL || `http://basospark.youthscience.club:${port}/v1` // Đường dẫn giao tiếp với post saved service
   },
   
   // Cấu hình Redis
   redis: {
-    host: process.env.REDIS_HOST || 'localhost',
+    host: process.env.REDIS_HOST || 'redis-baso',
     port: parseInt(process.env.REDIS_PORT || '6379'),
-    url: process.env.REDIS_URL || 'redis://:baso_redis@localhost:6379/0'
+    url: process.env.REDIS_URL || 'redis://:baso_redis@redis-baso:6379/0'
   },
 
   // Cấu hình cơ sở dữ liệu
@@ -46,9 +46,9 @@ export const config = {
   upload: {
     type: 'local',
     path: 'uploads',
-    cdn: process.env.CDN_URL || `http://localhost:${port}/uploads`
+    cdn: process.env.CDN_URL || `http://basospark.youthscience.club:${port}/uploads`
   },
 
   // Cấu hình cơ sở dữ liệu
-  dbURL: `postgresql://baso:baso_secret@localhost:5432/baso-social?connection_limit=50`
+  dbURL: `postgresql://baso:baso_secret@209.74.86.107:5432/baso-social?connection_limit=50`
 };
