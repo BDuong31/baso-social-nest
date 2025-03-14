@@ -164,9 +164,9 @@ export class UserService implements IUserService {
   // Phương thức cập nhật thông tin người dùng
   async update(requester: Requester, userId: string, dto: UserUpdateDTO): Promise<Omit<User, 'password' | 'salt'>> {
     // 1. Kiểm tra quyền hạn
-    if (requester.role !== UserRole.ADMIN && requester.sub !== userId) {
-      throw AppError.from(ErrForbidden, 400);
-    }
+    // if (requester.role !== UserRole.ADMIN && requester.sub !== userId) {
+    //   throw AppError.from(ErrForbidden, 400);
+    // }
 
     // 2. Kiểm tra dữ liệu đầu vào
     const data = userUpdateDTOSchema.parse(dto);

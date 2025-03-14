@@ -47,6 +47,7 @@ export interface IPostRpc {
 export interface IAuthorRpc {
   findById(id: string): Promise<PublicUser | null>;
   findByIds(ids: Array<string>): Promise<Array<PublicUser>>;
+  updateAuthorRpc(id: string, dto: any): Promise<boolean>;
 }
 
 // Định nghĩa interface cho RPC topics

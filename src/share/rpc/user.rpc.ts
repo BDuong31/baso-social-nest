@@ -20,7 +20,9 @@ export class UserRPCClient implements IPublicUserRpc {
         username: user.username,
         firstName: user.firstName,
         lastName: user.lastName,
-        avatar: user.avatar
+        avatar: user.avatar,
+        followerCount: user.followerCount,
+        postCount: user.postCount,
       } as PublicUser;
     } catch (error) {
       return null;
@@ -41,10 +43,23 @@ export class UserRPCClient implements IPublicUserRpc {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        avatar: user.avatar
+        avatar: user.avatar,
+        followerCount: user.followerCount,
+        postCount: user.postCount,
       } as PublicUser;
     });
 
     return users;
+  }
+
+  // Cập nhật thông tin người dùng
+  async updateAuthorRpc(id: string, dto: any): Promise<boolean> {
+    console.log('id', id);
+    console.log('dto', dto);
+    
+    // Gửi request lên user service
+    const { data } = await axios.patch(`${this.userServiceUrl}/rpc/users/${id}`, dto);
+    console.log('data', data);
+    return data.data;
   }
 }

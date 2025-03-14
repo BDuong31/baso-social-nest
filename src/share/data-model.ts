@@ -28,6 +28,8 @@ export const publicUserSchema = z.object({
   phone: z.string().min(10),
   email: z.string().email(),
   avatar: z.string().url(),
+  followerCount: z.number().int().nonnegative(),
+  postCount: z.number().int().nonnegative(),
 });
 
 // Kiểu dữ liệu của người dùng công khai

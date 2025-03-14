@@ -37,6 +37,8 @@ export const userUpdateDTOSchema = userSchema.pick({
     salt: true,
     role: true,
     status: true,
+    postCount: true,
+    followerCount: true,
 }).partial();
 
 // Định nghĩa kiểu dữ liệu cho DTO cập nhật thông tin người dùng

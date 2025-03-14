@@ -73,8 +73,8 @@ export class UserHttpController {
 
   // Phương thức cập nhật thông tin người dùng
   @Patch('v1/users/:id')
-  //@UseGuards(RemoteAuthGuard, RolesGuard)
-  //@Roles(UserRole.ADMIN)
+  @UseGuards(RemoteAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
   async updateUser(@Request() req: ReqWithRequester, @Param('id') id: string, @Body() dto: UserUpdateDTO) {
     const requester = req.requester;
@@ -129,6 +129,14 @@ export class UserRpcHttpController {
   async listUsersByIds(@Body('ids') ids: string[]) {
     const data = await this.userRepository.listByIds(ids);
     return { data: data.map(this._toResponseModel) };
+  }
+
+  @Patch('users/:id')
+  @HttpCode(HttpStatus.OK)
+  async updateUser(@Request() req: ReqWithRequester, @Param('id') id: string, @Body() dto: UserUpdateProfileDTO) {
+    const requester = req.requester;
+    await this.userService.update(requester, id, dto);
+    return { data: true };
   }
 
   // Chuyển đổi dữ liệu từ User sang dạng trả về

@@ -40,6 +40,17 @@ export class FollowingService implements IFollowingService {
       throw ErrNotFound;
     }
 
+    const followerCount = following.followerCount + 1;
+    const dtos = {
+      followerCount: followerCount,
+    };
+
+    const updateFollowing = await this.userRpc.updateAuthorRpc(data.followingId, dtos);
+
+    if (!updateFollowing) {
+      throw ErrNotFound;
+    }
+
     // Kiểm tra người dùng đã theo dõi người khác chưa
     const existing = await this.repository.find(data);
     if (existing) {

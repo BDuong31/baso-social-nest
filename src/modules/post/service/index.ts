@@ -37,7 +37,16 @@ export class PostService implements IPostService {
     if (!authorExist) {
       throw AppError.from(ErrAuthorNotFound, 404);
     }
+    const postCount = authorExist.postCount + 1;
+    const dtos = {
+      postCount: postCount,
+    }; 
+    const updateAuthor = await this.userRPC.updateAuthorRpc(data.authorId, dtos);
 
+    if (!updateAuthor) {
+      throw AppError.from(ErrAuthorNotFound, 404);
+    }
+    
     // 4. Tạo bài viết mới
     const newId = v7();
     const post: Post = {
@@ -55,6 +64,7 @@ export class PostService implements IPostService {
 
     // 5. Thêm bài viết mới vào Database
     await this.repository.insert(post);
+
 
     // 6. Gửi sự kiện bài viết được tạo
     this.eventPublisher.publish(PostCreatedEvent.create({ postId: newId, topicId: post.topicId }, post.authorId));
