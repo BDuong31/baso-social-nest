@@ -50,6 +50,8 @@ export const userSchema = z.object({
   email: z.string().email("Email is invalid"),
   phone: z.string().min(10).max(15).optional(),
   password: z.string().min(6, ErrPasswordAtLeast6Chars.message),
+  f2a: z.boolean().default(false),
+  secret: z.string().nullable().optional(),
   salt: z.string().min(8),
   bio: z.string().nullable().optional(),
   websiteUrl: z.string().nullable().optional(),

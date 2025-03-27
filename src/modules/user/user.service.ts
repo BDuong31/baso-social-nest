@@ -3,10 +3,14 @@ import bcrypt from 'bcrypt';
 import { AppError, ErrForbidden, ErrNotFound, ITokenProvider, Requester, TokenPayload, UserRole } from "src/share";
 import { v7 } from "uuid";
 import { TOKEN_PROVIDER, USER_REPOSITORY } from "./user.di-token";
-import { UserLoginDTO, userLoginDTOSchema, UserRegistrationDTO, userRegistrationDTOSchema, UserUpdateDTO, userUpdateDTOSchema, UserUpdatePasswordDTO, userUpdatePasswordDTOSchema } from "./user.dto";
+import { UserLoginDTO, userLoginDTOSchema, UserRegistrationDTO, userRegistrationDTOSchema, UserUpdateDTO, userUpdateDTOSchema, UserUpdatePasswordDTO, userUpdatePasswordDTOSchema, UserF2aDTO, UserAuthDTO } from "./user.dto";
 import { ErrInvalidToken, ErrInvalidUsernameAndPassword, ErrUserInactivated, ErrUsernameExisted, Status, User } from "./user.model";
 import { IUserRepository, IUserService } from "./user.port";
-
+import * as speakeasy from 'speakeasy';
+import * as QRCode from 'qrcode';
+import { createCanvas, loadImage } from 'canvas';
+import * as path from 'path';
+import { boolean, string } from "zod";
 // Lớp UserService cung cấp các phương thức xử lý logic liên quan đến người dùng
 @Injectable()
 export class UserService implements IUserService {
@@ -33,6 +37,7 @@ export class UserService implements IUserService {
       ...data,
       phone: '',
       password: hashPassword,
+      f2a: false,
       id: newId,
       status: Status.ACTIVE,
       salt: salt,
@@ -49,7 +54,7 @@ export class UserService implements IUserService {
   }
 
   // Phương thức đăng nhập
-  async login(dto: UserLoginDTO): Promise<string> {
+  async login(dto: UserLoginDTO): Promise<UserAuthDTO> {
     const data = userLoginDTOSchema.parse(dto);
 
     // 1. Tìm người dùng trong DTO
@@ -69,14 +74,31 @@ export class UserService implements IUserService {
       throw AppError.from(ErrUserInactivated, 400);
     }
 
+    if (user.f2a) {
+      const data: UserAuthDTO = {
+        token: user.id,
+        f2a: true,
+      }
+
+      return data;
+    } else {
+      const role = user.role;
+      const token = await this.tokenProvider.generateToken({ sub: user.id, role });
+      const data: UserAuthDTO = {
+        token: token,
+        f2a: false,
+      }
+      return data;
+    }
+
     // 3. Trả về token
-    const role = user.role;
-    const token = await this.tokenProvider.generateToken({ sub: user.id, role });
-    return token;
+    // const role = user.role;
+    // const token = await this.tokenProvider.generateToken({ sub: user.id, role });
+    // return token;
   }
 
   // Phương thức đăng nhập bằng google
-  async googleLogin(dto : UserRegistrationDTO): Promise<string> {
+  async googleLogin(dto : UserRegistrationDTO): Promise<UserAuthDTO> {
     const data = userRegistrationDTOSchema.parse(dto);
 
     // Kiểm tra xem user đã tồn tại hay chưa
@@ -92,6 +114,7 @@ export class UserService implements IUserService {
         ...data,
         phone: '',
         password: hashPassword,
+        f2a: false,
         id: newId,
         status: Status.ACTIVE,
         salt: '',
@@ -104,7 +127,11 @@ export class UserService implements IUserService {
       await this.userRepo.insert(newUser);
       const role = newUser.role;
       const token = await this.tokenProvider.generateToken({ sub: newUser.id, role });
-      return token;
+      const dataUser: UserAuthDTO = {
+        token: token,
+        f2a: false,
+      }
+      return dataUser;
       console.log('Đăng ký tài khoản mới thành công');
     } else {
 
@@ -112,11 +139,106 @@ export class UserService implements IUserService {
         throw AppError.from(ErrUserInactivated, 400);
       }
 
-      const role = user.role;
-      const token = await this.tokenProvider.generateToken({ sub: user.id, role });
-      return token;
+      if (user.f2a) {
+        const dataUser: UserAuthDTO = {
+          token: user.id,
+          f2a: true,
+        }
+  
+        return dataUser;
+      } else {
+        const role = user.role;
+        const token = await this.tokenProvider.generateToken({ sub: user.id, role });
+        const data: UserAuthDTO = {
+          token: token,
+          f2a: false,
+        }
+        return data;
+      }
     }
   }
+
+  async enable2FA(userId: string): Promise<UserF2aDTO> {
+    const user = await this.userRepo.get(userId);
+    if (!user) {
+      throw AppError.from(ErrNotFound, 400);
+    }
+    if (user.secret === null) {
+      const secret = speakeasy.generateSecret({ name: `BasoSocial (${user.username})` });
+
+      await this.userRepo.update(userId, { f2a: true, secret: secret.base32 });
+
+      console.log(secret.otpauth_url);
+      const qrCode = await QRCode.toDataURL(secret.otpauth_url || '', {});
+
+      const qrWithLogo = await this.addLogoToQR(qrCode);
+
+      return { 
+        secret: secret.base32, 
+        qrcode: qrWithLogo || '',
+      };
+    } else {
+      const secret = string().parse(user.secret);
+      await this.userRepo.update(userId, { f2a: true });
+      const qrCode = await QRCode.toDataURL(`otpauth://totp/BasoSocial (${user.username})?secret=${user.secret}&issuer=BasoSocial`, {});
+      const qrWithLogo = await this.addLogoToQR(qrCode);
+      return {
+        secret: secret,
+        qrcode: qrWithLogo || '',
+      };
+    }
+  } 
+
+  async verify2FAToken(userId: string, token: string): Promise<UserAuthDTO> {
+    const user = await this.userRepo.get(userId);
+    if (!user) {
+      throw AppError.from(ErrNotFound, 400);
+    }
+
+    const verify = speakeasy.totp.verify({
+      secret: user.secret || '',
+      encoding: 'base32',
+      token
+    })
+
+    if (!verify) {
+      throw AppError.from(ErrInvalidToken, 400);
+    }
+
+    const role = user.role;
+    const newToken = await this.tokenProvider.generateToken({ sub: user.id, role });
+    const data: UserAuthDTO = {
+      token: newToken,
+      f2a: true,
+    }
+    return data;
+  }
+
+  async disable2FA(requester: Requester, userId: string): Promise<boolean> {
+    await this.userRepo.update(userId, { f2a: false});
+    return true;
+  }
+
+  private async addLogoToQR(qrDataURL: string): Promise<string> {
+    const canvas = createCanvas(300, 300); // Kích thước QR
+    const ctx = canvas.getContext('2d');
+
+    // Load QR Code từ base64
+    const qrImage = await loadImage(qrDataURL);
+    ctx.drawImage(qrImage, 0, 0, 300, 300);
+
+    // Load logo (có thể dùng ảnh từ URL hoặc local)
+    const logo = await loadImage("http://localhost:3000/assets/logo.png");
+    const logoSize = 60; // Kích thước logo
+    const centerX = (300 - logoSize) / 2;
+    const centerY = (300 - logoSize) / 2;
+
+    // Vẽ logo vào giữa QR
+    ctx.drawImage(logo, centerX, centerY, logoSize, logoSize);
+
+    // Trả về base64
+    return canvas.toDataURL();
+}
 
   // Phương thức xác thực token
   async introspectToken(token: string): Promise<TokenPayload> {
@@ -225,3 +347,4 @@ export class UserService implements IUserService {
     await this.userRepo.delete(userId, false);
   }
 }
+

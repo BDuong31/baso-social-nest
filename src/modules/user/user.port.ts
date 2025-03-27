@@ -1,12 +1,15 @@
 import { Requester, TokenPayload } from "src/share";
-import { UserCondDTO, UserLoginDTO, UserRegistrationDTO, UserUpdateDTO, UserUpdatePasswordDTO} from "./user.dto";
+import { UserAuthDTO, UserCondDTO, UserF2aDTO, UserLoginDTO, UserRegistrationDTO, UserUpdateDTO, UserUpdatePasswordDTO} from "./user.dto";
 import { User } from "./user.model";
 
 // Định nghĩa các phương thức mà UserService cần phải cung cấp
 export interface IUserService {
     register(dto: UserRegistrationDTO): Promise<string> // Đăng ký người dùng mới
-    login(dto: UserLoginDTO): Promise<string>  // Đăng nhập
-    googleLogin(dto: UserRegistrationDTO): Promise<string> // Đăng nhập bằng Google
+    login(dto: UserLoginDTO): Promise<UserAuthDTO>  // Đăng nhập
+    googleLogin(dto: UserRegistrationDTO): Promise<UserAuthDTO> // Đăng nhập bằng Google
+    enable2FA(userId: string): Promise<UserF2aDTO> // Bật 2FA
+    verify2FAToken(userId: string, token: string): Promise<UserAuthDTO> // Xác thực mã token 2FA
+    disable2FA(requester: Requester, userId: string): Promise<boolean> // Tắt 2FA
     profile(userId: string): Promise<Omit<User, 'password' | 'salt'>> // Lấy thông tin người dùng
     update(requester: Requester, userId: string, dto: UserUpdateDTO): Promise<Omit<User, 'password' | 'salt'>> // Cập nhật thông tin người dùng
     updatePassword(requester: Requester, userId: string, dto: UserUpdatePasswordDTO): Promise<void> // Cập nhật mật khẩu

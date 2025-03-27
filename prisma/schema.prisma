@@ -201,6 +201,8 @@ model User {
   email         String?        @unique @map("email") @db.VarChar(255)
   phone         String?       @map("phone") @db.VarChar(20)
   password      String        @map("password") @db.VarChar(100)
+  f2a           Boolean     @default(false) @map("f2a_enabled") 
+  secret         String?     @map("f2a_secret") @db.VarChar(255) 
   salt          String        @map("salt") @db.VarChar(50)
   role          UserRole      @default(user) @map("role")
   bio           String?       @map("bio") @db.VarChar(255)

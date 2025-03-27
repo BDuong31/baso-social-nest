@@ -32,6 +32,8 @@ export const userUpdateDTOSchema = userSchema.pick({
     email: true,
     phone: true,
     password: true,
+    f2a: true,
+    secret: true,
     bio: true,
     websiteUrl: true,
     salt: true,
@@ -43,6 +45,20 @@ export const userUpdateDTOSchema = userSchema.pick({
 
 // Định nghĩa kiểu dữ liệu cho DTO cập nhật thông tin người dùng
 export interface UserUpdateDTO extends z.infer<typeof userUpdateDTOSchema>{}
+
+export const userF2aDTOSchema = z.object({
+    secret: z.string(),
+    qrcode: z.string(),
+}).required();
+
+export interface UserF2aDTO extends z.infer<typeof userF2aDTOSchema>{}
+
+export const userAuth = z.object({
+    f2a: z.boolean(),
+    token: z.string(),
+})
+
+export interface UserAuthDTO extends z.infer<typeof userAuth>{}
 
 export const userUpdatePasswordDTOSchema = z.object({
     oldpassword: z.string(),

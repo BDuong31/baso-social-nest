@@ -7,6 +7,7 @@ import { UserLoginDTO, UserRegistrationDTO, UserUpdateDTO, UserUpdateProfileDTO,
 import { ErrInvalidToken, User } from "./user.model";
 import { IUserRepository, IUserService } from "./user.port";
 import { AuthGuard } from "@nestjs/passport";
+import { patch } from "axios";
 
 // Lớp UserHttpController cung cấp các phương thức xử lý request HTTP
 @Controller()
@@ -35,6 +36,30 @@ export class UserHttpController {
   @HttpCode(HttpStatus.OK)
   async googleLogin(@Body() dto: UserRegistrationDTO) {
     const data = await this.userService.googleLogin(dto);
+    return { data };
+  }
+
+  @Post('v1/users/:id/2fa')
+  @UseGuards(RemoteAuthGuard, RolesGuard)
+  @HttpCode(HttpStatus.OK)
+  async enable2fa(@Param('id') id: string) {
+    const data = await this.userService.enable2FA(id);
+    return { data };
+  }
+
+  @Patch('v1/users/:id/2fa')
+  @HttpCode(HttpStatus.OK)
+  async verify2fa(@Param('id') id: string, @Body() dto: { token: string }) {
+    const data = await this.userService.verify2FAToken(id, dto.token);
+    return { data };
+  }
+
+  @Delete('v1/users/:id/2fa')
+  @UseGuards(RemoteAuthGuard, RolesGuard)
+  @HttpCode(HttpStatus.OK)
+  async disable2fa(@Request() req: ReqWithRequester ,@Param('id') id: string) {
+    const requester = req.requester;
+    const data = await this.userService.disable2FA(requester, id);
     return { data };
   }
 
