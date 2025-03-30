@@ -344,7 +344,7 @@ export class UserService implements IUserService {
     }
 
     // 2. Xóa người dùng
-    await this.userRepo.delete(userId, false);
+    await this.userRepo.delete(userId, true);
   }
 }
 

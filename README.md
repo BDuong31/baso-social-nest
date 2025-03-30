@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://youthscience.club/" target="blank"><img src="https://i.postimg.cc/MGD1S5fv/circle-logo.png" width="120" alt="Baso Logo" /></a>
+  <a href="https://youthscience.club/" target="blank"><img src="https://i.postimg.cc/xdK1Lc5R/logo.png" width="120" alt="Baso Logo" /></a>
 </p>
 
 [circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
