@@ -27,6 +27,7 @@ const tokenProvider: Provider = { provide: TOKEN_PROVIDER, useValue: tokenJWTPro
   imports: [ShareModule, ConfigModule],
   controllers: [UserHttpController, UserRpcHttpController],
   providers: [...repositories, ...services, tokenProvider],
+  exports: [USER_SERVICE, USER_REPOSITORY], 
 })
 
 export class UserModule {}

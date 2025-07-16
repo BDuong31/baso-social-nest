@@ -59,6 +59,7 @@ export const userSchema = z.object({
   postCount: z.number().default(0),
   role: z.nativeEnum(UserRole, ErrRoleInvalid),
   status: z.nativeEnum(Status).optional(),
+  fcmToken: z.string().nullable().optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });

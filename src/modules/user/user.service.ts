@@ -346,5 +346,14 @@ export class UserService implements IUserService {
     // 2. Xóa người dùng
     await this.userRepo.delete(userId, true);
   }
+
+  // Phương thức cập nhật FCM token
+  async updateFcmToken(userId: string, fcmToken: string): Promise<void> {
+    const user = await this.userRepo.get(userId);
+    if (!user) {
+      throw AppError.from(ErrNotFound, 404);
+    }
+    await this.userRepo.updateFcmToken(userId, fcmToken);
+}
 }
 

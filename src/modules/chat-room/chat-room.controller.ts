@@ -61,9 +61,9 @@ export class ChatRoomController {
     @HttpCode(HttpStatus.OK)
     async listChatRooms(@Request() request: ReqWithRequester) {
         const userId = request.requester.sub;
-        const data = await this.service.list(userId); 
+        const dataUser = await this.service.list(userId); 
 
-        const messengerIds = data.map((item) => {
+        const messengerIds = dataUser.map((item) => {
             return item.creatorId == userId ? item.receiverId : item.creatorId;
         });
 
@@ -77,7 +77,7 @@ export class ChatRoomController {
 
         console.log('userMap', userMap);
 
-        const result = await Promise.all(data.map(async (item) => {
+        const data = await Promise.all(dataUser.map(async (item) => {
             const messagerId = item.creatorId == userId ? item.receiverId : item.creatorId;
             const messager = userMap[messagerId];
             const dataMessage = await this.chatMessageRepo.findByCond({ roomId: item.id });
@@ -90,9 +90,9 @@ export class ChatRoomController {
             } as ChatRoom;
         }));
 
-        console.log('result', result);
+        console.log('result', data);
 
-        return { result };
+        return { data };
     }
 }
 
@@ -100,8 +100,11 @@ export class ChatRoomController {
 @Controller('/v1/rpc/chat-rooms')
 export class ChatRoomRpcController{
     constructor(
-        @Inject(CHAT_ROOM_REPOSITORY) private readonly repository: IChatRoomRepository) {}
-
+        @Inject(CHAT_ROOM_REPOSITORY) private readonly repository: IChatRoomRepository,
+        @Inject(CHAT_ROOM_SERVICE) private readonly service: IChatRoomService,
+        @Inject(USER_RPC) private readonly userRPC: IAuthorRpc,
+        @Inject(CHAT_MESSAGE_REPOSITORY) private readonly chatMessageRepo: IChatMessageRepository,
+    ) {}
     // Phương thức lấy thông tin phòng chat
     @Post('list-by-ids')
     @HttpCode(HttpStatus.OK)
@@ -112,12 +115,39 @@ export class ChatRoomRpcController{
 
     // Phương thức lấy thông tin phòng chat theo id
     @Get(':id')
+    @UseGuards(RemoteAuthGuard, RolesGuard)
     @HttpCode(HttpStatus.OK)
-    async getById(@Param('id') id: string) {
-        const data = await this.repository.findById(id);
-        if (!data) {
-            throw new NotFoundException();
+    async getById(@Request() request: ReqWithRequester, @Param('id') id: string) {
+        const userId = request.requester.sub;
+        const dataUser = await this.service.list(userId);
+
+        const messengerIds = dataUser.map((item) => {
+            return item.creatorId == userId ? item.receiverId : item.creatorId;
+        });
+
+        const users = await this.userRPC.findByIds(messengerIds);
+
+        const userMap: Record<string, PublicUser> = {};
+
+        users.forEach((u: PublicUser) => {
+            userMap[u.id] = u;
+        });
+
+        const data = await Promise.all(dataUser.map(async (item) => {
+            const messagerId = item.creatorId == userId ? item.receiverId : item.creatorId;
+            const messager = userMap[messagerId];
+            const dataMessage = await this.chatMessageRepo.findByCond({ roomId: item.id });
+            return {
+                ...item,
+                messager: messager,
+                messages: dataMessage
+            } as ChatRoom;
+        }));
+
+        const chatRoom = data.find(room => room.id === id);
+        if (!chatRoom) {
+            throw new NotFoundException(`Chat room with id ${id} not found`);
         }
-        return { data };
+        return { data: chatRoom };
     }
 }

@@ -90,3 +90,10 @@ export interface UserCondDTO extends z.infer<typeof userCondDTOSchema>{}
 
 // Định nghĩa kiểu dữ liệu cho DTO cập nhật thông tin người dùng
 export interface UserUpdateProfileDTO extends z.infer<typeof userUpdateProfileDTOSchema>{}
+
+export const fcmTokenUpdateDTOSchema = z.object({
+    fcmToken: z.string().min(1, { message: 'FCM token cannot be empty' }),
+});
+
+export interface FcmTokenUpdateDTO extends z.infer<typeof fcmTokenUpdateDTOSchema>{}
+

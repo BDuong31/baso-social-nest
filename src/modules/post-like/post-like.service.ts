@@ -33,6 +33,8 @@ export class PostLikeService implements IPostLikeService {
     
         await this.repo.insert({ ...parseData, createdAt: new Date() } as PostLike);
     
+        console.log(`🚀🚀🚀 [POST-LIKE-SERVICE] Chuẩn bị PHÁT sự kiện PostLikedEvent.`);
+
         // Gửi sự kiện bài viết được like
         this.eventPublisher.publish(PostLikedEvent.create({ postId: parseData.postId }, parseData.userId));
     

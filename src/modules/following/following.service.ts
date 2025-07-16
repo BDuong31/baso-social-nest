@@ -65,6 +65,8 @@ export class FollowingService implements IFollowingService {
 
     const ok = await this.repository.insert(model);
 
+    console.log(`🚀🚀🚀 [FOLLOWING-SERVICE] Chuẩn bị PHÁT sự kiện FollowedEvent.`);
+
     // Gửi sự kiện người dùng được theo dõi
     this.eventBus.publish(FollowedEvent.create({ followingId: data.followingId }, data.followerId));
 

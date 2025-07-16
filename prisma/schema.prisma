@@ -108,16 +108,6 @@ model PostSave {
   @@map("post_saves")
 }
 
-model PostTags {
-  postId    String   @map("post_id") @db.VarChar(36)
-  tagId     String   @map("tag_id") @db.VarChar(36)
-  createdAt DateTime @map("created_at") @db.Timestamp(3)
-
-  @@id([postId, tagId])
-  @@index([tagId], map: "tag_id")
-  @@map("post_tags")
-}
-
 model Post {
   id           String      @id @map("id") @db.VarChar(36)
   content      String      @map("content") @db.Text
@@ -134,50 +124,6 @@ model Post {
   @@index([authorId], map: "authorIdIdx")
   @@index([isFeatured], map: "isFeaturedIdx")
   @@map("posts")
-}
-
-model Stories {
-  id        String         @id @map("id") @db.VarChar(36)
-  userId    String         @map("user_id") @db.VarChar(36)
-  content   String?        @map("content") @db.Text
-  likeCount Int            @default(0) @map("like_count")  @db.Integer
-  viewCount Int            @default(0) @map("view_count")  @db.Integer
-  media     Json?
-  expiresAt DateTime       @map("expires_at") @db.Timestamp(6)
-  status    stories_status @default(active) @map("status")
-  createdAt DateTime       @unique(map: "stories_created_at_idx") @map("created_at") @db.Timestamp(6)
-  updatedAt DateTime       @map("updated_at") @db.Timestamp(6)
-
-  @@index([userId], map: "user_id")
-  @@map("stories")
-}
-
-model StoryLikes {
-  storyId   String   @map("story_id") @db.VarChar(36)
-  userId    String   @map("user_id") @db.VarChar(36)
-  createdAt DateTime @map("created_at")  @db.Timestamp(6)
-
-  @@id([storyId, userId])
-  @@map("story_likes")
-}
-
-model StoryViews {
-  storyId   String   @map("story_id") @db.VarChar(36)
-  userId    String   @map("user_id") @db.VarChar(36)
-  createdAt DateTime @map("created_at")  @db.Timestamp(6)
-
-  @@id([storyId, userId])
-  @@map("story_views")
-}
-
-model Tags {
-  id        String   @id @map("id") @db.VarChar(36)
-  name      String   @map("name") @db.VarChar(50)
-  postCount Int?     @default(0) @map("post_count") @db.Integer
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
-  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamp(0)
-
-  @@map("tags")
 }
 
 model Topic {
@@ -210,6 +156,7 @@ model User {
   followerCount Int?          @default(0) @map("follower_count") @db.Integer
   postCount     Int?          @default(0) @map("post_count") @db.Integer
   status        UserStatus?   @default(active) @map("status")
+  fcmToken      String?   @map("fcm_token") @db.Text
   createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt     DateTime      @default(now()) @map("updated_at") @db.Timestamp(0)
 

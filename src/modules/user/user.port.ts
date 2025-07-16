@@ -16,6 +16,7 @@ export interface IUserService {
     delete(requester: Requester, userId: string): Promise<void>  // Xóa người dùng
     // Kiểm tra mã token
     introspectToken(token: string): Promise<TokenPayload>;
+    updateFcmToken(userId: string, fcmToken: string): Promise<void>; // Cập nhật FCM token
 }
 
 export interface IUserRepository {
@@ -27,4 +28,5 @@ export interface IUserRepository {
     insert(user: User): Promise<void>  // Thêm người dùng mới
     update(id: string, dto: UserUpdateDTO): Promise<void> // Cập nhật thông tin người dùng
     delete(id: string, isHard: boolean): Promise<void>  // Xóa người dùng
+    updateFcmToken(userId: string, fcmToken: string): Promise<void>; // Cập nhật FCM token
 }

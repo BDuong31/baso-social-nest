@@ -3,7 +3,7 @@ import { Request as ExpressRequest } from "express";
 import { AppError, ErrNotFound, ReqWithRequester, UserRole } from "src/share";
 import { RemoteAuthGuard, Roles, RolesGuard } from "src/share/guard";
 import { USER_REPOSITORY, USER_SERVICE } from "./user.di-token";
-import { UserLoginDTO, UserRegistrationDTO, UserUpdateDTO, UserUpdateProfileDTO, UserUpdatePasswordDTO } from "./user.dto";
+import { UserLoginDTO, UserRegistrationDTO, UserUpdateDTO, UserUpdateProfileDTO, UserUpdatePasswordDTO, FcmTokenUpdateDTO } from "./user.dto";
 import { ErrInvalidToken, User } from "./user.model";
 import { IUserRepository, IUserService } from "./user.port";
 import { AuthGuard } from "@nestjs/passport";
@@ -116,6 +116,16 @@ export class UserHttpController {
     const requester = req.requester;
     await this.userService.delete(requester, id);
     return { data: true };
+  }
+
+  // Phương thức kiểm tra mã token
+  @Post('v1/fcm-token')
+  @UseGuards(RemoteAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async updateFcmToken(@Request() req: ReqWithRequester, @Body() dto: FcmTokenUpdateDTO) {
+    const userId = req.requester.sub;
+    await this.userService.updateFcmToken(userId, dto.fcmToken);
+    return { data: { success: true } };
   }
 }
 

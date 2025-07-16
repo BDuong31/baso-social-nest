@@ -51,6 +51,10 @@ export class UserPrismaRepository implements IUserRepository {
       await prisma.user.update({ where: { id }, data: { status: Status.DELETED } });
   }
 
+  // Cập nhật FCM token
+  async updateFcmToken(id: string, fcmToken: string): Promise<void> {
+      await prisma.user.update({ where: { id }, data: { fcmToken } });
+  }
   // Chuyển đổi dữ liệu từ Prisma sang User
   private _toModel(data: UserPrisma): User {
     return { ...data, role: data.role as UserRole } as User;

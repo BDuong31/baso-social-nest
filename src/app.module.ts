@@ -16,6 +16,7 @@ import { UserModule } from './modules/user/user.module';
 import { ChatRoomModule } from './modules/chat-room/chat-room.module';
 import { ChatMessageModule } from './modules/chat-message/chat-message.module';
 import { ShareModule } from './share/module';
+import { FirebaseModule } from './modules/firebase/firebase.module';
 @Module({
   imports: [
     // Cấu hình ServeStaticModule để phục vụ các tệp tĩnh từ thư mục uploads
@@ -31,6 +32,7 @@ import { ShareModule } from './share/module';
     }),
 
     // Import các module
+    FirebaseModule,
     ShareModule,
     UserModule,
     UploadModule,
